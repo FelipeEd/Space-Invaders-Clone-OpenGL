@@ -1,5 +1,5 @@
 #Files that will be compiled
-OBJS = stb_image.cpp buffersandglobals.cpp rectangle.cpp shader.cpp main.cpp glad.c
+OBJS =  stb_image.cpp buffersandglobals.cpp player.cpp entity.cpp rectangle.cpp shader.cpp main.cpp glad.c
 
 #Used compiler
 CC = g++
