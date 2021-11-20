@@ -1,12 +1,12 @@
 #include <jellyfish/Jellyfish.hpp>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-void processInput(GLFWwindow *window);
+void processInput(GLFWwindow *window, bool &gameIsPaused, bool &mouseMiddleisPressed);
 
 // Global
 // Tamanho da janela
-unsigned int WIDTH = 1280;
-unsigned int HEIGHT = 720;
+unsigned int WIDTH = 1600; //1280;
+unsigned int HEIGHT = 900; //720;
 
 unsigned int vao;
 unsigned int vbo;
@@ -66,26 +66,37 @@ int main()
     Entity rect3(WIDTH, HEIGHT, texture1, 1);
     Entity rect4(0, HEIGHT, texture1, 1);
     Entity rect5(WIDTH, 0, texture1, 1);
-    Entity rect6(WIDTH - 200, 100, texture3, 1);
+    Entity rect6(WIDTH / 2, HEIGHT / 2, texture3, 1);
     Entity rect7(WIDTH - 200, 300, texture4, 1);
 
     Player player;
+
+    Alien alien1(WIDTH / 2, HEIGHT / 2, texture3, 1);
+    AlienSquad wave1(alien1, 0, 0, 4, 2);
 
     double prevTime = 0.0;
     double crntTime = 0.0;
     double timeDiff;
     unsigned int counter = 0;
 
+    bool gameIsPaused = false;
+    bool mouseRightIsPressed = false;
+    bool mouseMiddleIsPressed = false;
+    int pauseCooldown = 20;
+
     // Loop da aplicação
     while (!glfwWindowShouldClose(window))
     {
+        // Input handling
+        processInput(window, mouseRightIsPressed, mouseMiddleIsPressed);
+
         crntTime = glfwGetTime();
         timeDiff = crntTime - prevTime;
         counter++;
-
         // Coisas dependentes de tempo roda uma vez por frame
         if (timeDiff >= 1.0 / 120.0)
         {
+
             std::string FPS = std::to_string((1.0 / timeDiff) * counter);
             std::string ms = std::to_string((timeDiff / counter) * 1000);
             std::string newTitle = "Space Invaders - " + FPS + "FPS /" + ms + "ms";
@@ -93,11 +104,19 @@ int main()
             prevTime = crntTime;
             counter = 0;
 
+            if (mouseRightIsPressed && pauseCooldown == 0)
+            {
+                gameIsPaused = !gameIsPaused;
+                pauseCooldown = 20;
+            }
+
+            if (pauseCooldown > 0)
+                pauseCooldown--;
+
+            mouseRightIsPressed = false;
+
             player.keyUpdate(window);
         }
-
-        // Input handling
-        processInput(window);
 
         // Render ----------------------------------------------------------------------
         // Define a cor de fundo da janela
@@ -113,11 +132,55 @@ int main()
         rect6.draw();
         rect7.draw();
 
+        wave1.move();
+        wave1.draw();
+
         player.update();
         player.draw();
 
         // Faz a troca do framebuffer antigo para o novo (double buffer)
         glfwSwapBuffers(window);
+
+        // Main do jogo Pausado
+        while (gameIsPaused && !glfwWindowShouldClose(window))
+        {
+            mouseMiddleIsPressed = false;
+            processInput(window, mouseRightIsPressed, mouseMiddleIsPressed);
+
+            crntTime = glfwGetTime();
+            timeDiff = crntTime - prevTime;
+            counter++;
+            if (timeDiff >= 1.0 / 120.0)
+            {
+                std::string FPS = std::to_string((1.0 / timeDiff) * counter);
+                std::string ms = std::to_string((timeDiff / counter) * 1000);
+                std::string newTitle = "Space Invaders - " + FPS + "FPS /" + ms + "ms";
+                glfwSetWindowTitle(window, newTitle.c_str());
+                prevTime = crntTime;
+                counter = 0;
+
+                if (mouseRightIsPressed && pauseCooldown == 0)
+                {
+                    gameIsPaused = !gameIsPaused;
+                    pauseCooldown = 20;
+                }
+                if (mouseMiddleIsPressed && pauseCooldown == 0)
+                {
+                    player.debug();
+                    wave1.debug();
+                    gameIsPaused = false;
+                    pauseCooldown = 20;
+                }
+                if (pauseCooldown > 0)
+                    pauseCooldown--;
+
+                mouseRightIsPressed = false;
+
+                glfwPollEvents();
+            }
+        }
+        if (mouseMiddleIsPressed)
+            gameIsPaused = true;
 
         //------------------------------------------------------------------------------
 
@@ -131,11 +194,20 @@ int main()
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow *window, bool &mouseRightIsPressed, bool &mouseMiddleIsPressed)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, true);
+    }
+
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+    {
+        mouseRightIsPressed = true;
+    }
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
+    {
+        mouseMiddleIsPressed = true;
     }
 }
 

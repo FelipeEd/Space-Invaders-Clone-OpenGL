@@ -2,6 +2,22 @@
 
 Guns::Guns(int type)
 {
+    this->type = type;
+    // Alien ammo 1
+    if (type == 0)
+    {
+        this->maxAmmo = 9999999;
+        this->currentAmmo = maxAmmo;
+        this->fireCooldown = 40;
+
+        for (auto &bullet : bullets)
+        {
+            bullet = Entity(-100, -100, 0.3f, 0.3f, textureBullet, 1);
+            bullet.setSpeed(0.0f, -0.01f);
+        }
+    }
+
+    // Player ammo 1
     if (type == 1)
     {
         this->maxAmmo = 9999999;
@@ -59,5 +75,19 @@ void Guns::drawBullets()
     for (auto &bulet : bullets)
     {
         bulet.draw();
+    }
+}
+
+void Guns::debug()
+{
+    for (auto &bullet : this->bullets)
+    {
+        float posx = bullet.getPosition()[0];
+        float posy = bullet.getPosition()[1];
+        if (abs(posx) <= 1.0f && abs(posy) <= 1.0f)
+            std::cout << "    Bullet :: Type " << this->type
+                      << " ::"
+                      << " x: " << posx
+                      << " y: " << posy << std::endl;
     }
 }

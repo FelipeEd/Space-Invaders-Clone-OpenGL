@@ -98,3 +98,11 @@ float *Player::getPosition()
 {
     return this->ship.getPosition();
 }
+
+void Player::debug()
+{
+    std::cout << "Player ::" << std::endl;
+    //std::cout << "Player ::"<< this-> << std::endl;
+    this->ship.debug();
+    this->gun.debug();
+}

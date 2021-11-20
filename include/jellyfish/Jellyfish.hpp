@@ -32,6 +32,10 @@ class Rectangle;
 class Entity;
 class Guns;
 class Player;
+class Alien;
+class AlienSquad;
+
+void debug(Player player);
 
 // Classe basica para compilar os shaders do openGL
 class Shader
@@ -91,15 +95,15 @@ public:
 class Entity
 {
 
-public:
+private:
     Rectangle rect;
 
     // Vetores normalizados para NCD
     float position[2] = {-100, -100};
-    float oldPosition[2] = {-100, -100};
     float speed[2] = {0.0f, 0.0f};
     float accel[2] = {0.0f, 0.0f};
 
+public:
     Entity(){};
     // Entidades quadradas
     Entity(int posx, int posy, unsigned int texture, int nframes);
@@ -114,6 +118,8 @@ public:
     void move();
     // Move o retangulo baseado na velocidade atual mantendo na tela
     void moveInBounds();
+    // Printado quando no modo depuração
+    void debug();
 
     // Autopiloto simples para chegar em um ponto controlando a aceleração
 
@@ -124,7 +130,9 @@ public:
     // Define a Posição atual
     void setPosition(float posx, float posy);
 
-    // Retorna a velocidade atual
+    // Retorna a Aceleração atual
+    float *getAccel();
+    // Retorna a Velocidade atual
     float *getSpeed();
     // Retorna a Posição atual
     float *getPosition();
@@ -133,6 +141,7 @@ public:
 class Guns
 {
 private:
+    int type;
     Entity bullets[10];
     // ciclar no array de balas
     int countCurrentBullet = 0;
@@ -158,11 +167,12 @@ public:
     void moveBullets();
     // Desenha as balas na tela
     void drawBullets();
+    // Debug
+    void debug();
 };
 
 class Player
 {
-
 private:
     Entity ship = Entity(WIDTH / 2, (int)HEIGHT * 0.9f, texturePlayer, 3);
 
@@ -187,7 +197,46 @@ public:
     void draw();
     // Notifica o player do status de cada input possivel e roda a cada frame
     void keyUpdate(GLFWwindow *window);
-
+    void debug();
     // Retorna a posição do player
     float *getPosition();
+};
+
+// Classe para um alien individual
+class Alien
+{
+private:
+    int hitpoints = 5;
+    Entity ship;
+    bool Alive = true;
+    Guns gun = Guns(0);
+
+public:
+    float initPos[2];
+    Alien() {}
+    Alien(float posx, float posy, unsigned int texture, int nframes);
+    void draw();
+
+    void setPosition(float posx, float posy);
+
+    float *getPosition();
+};
+
+// Classe que controla o cluster de aliens do mesmo tipo
+class AlienSquad
+{
+private:
+    float position[2];
+    int n, m;
+    float clampDist = 0.2f;
+    float deltaX, deltaY;
+    Alien *Aliens;
+
+public:
+    ~AlienSquad();
+    AlienSquad(Alien parentAlien, int pixelx, int pixely, int n, int m);
+
+    void move();
+    void draw();
+    void debug();
 };

@@ -103,3 +103,8 @@ float pixelYToNDC(int y)
 {
     return ((float)HEIGHT - 2.0f * y) / (float)HEIGHT;
 }
+
+void debug(Player player)
+{
+    player.debug();
+}

@@ -49,6 +49,21 @@ void Entity::moveInBounds()
     }
 }
 
+void Entity::debug()
+{
+    std::cout << std::fixed;
+    std::cout << "    Entity ::" << std::endl;
+    std::cout << "        Position :: "
+              << " x: " << this->getPosition()[0]
+              << " y: " << this->getPosition()[1] << std::endl;
+    std::cout << "        Speed    :: "
+              << " x: " << this->getSpeed()[0]
+              << " y: " << this->getSpeed()[1] << std::endl;
+    std::cout << "        Accel    :: "
+              << " x: " << this->getAccel()[0]
+              << " y: " << this->getAccel()[1] << std::endl;
+}
+
 void Entity::setAccel(float acx, float acy)
 {
     this->accel[0] = acx;
@@ -65,6 +80,11 @@ void Entity::setPosition(float posx, float posy)
 {
     this->position[0] = posx;
     this->position[1] = posy;
+}
+
+float *Entity::getAccel()
+{
+    return this->accel;
 }
 
 float *Entity::getSpeed()
