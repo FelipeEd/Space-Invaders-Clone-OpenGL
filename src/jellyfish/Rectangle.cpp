@@ -1,23 +1,19 @@
-#include "Rectangle.hpp"
+#include <jellyfish/Jellyfish.hpp>
 
-
-Rectangle::Rectangle(){}
-
+Rectangle::Rectangle() {}
 
 Rectangle::Rectangle(float h, float w, unsigned int intexture, int nframes)
 {
 
-    Shader shaderProgram("shaders/vertex.glsl", "shaders/fragment.glsl");
+    Shader shaderProgram("bin/shaders/vertex.glsl", "bin/shaders/fragment.glsl");
 
-    this->scale[0] = h*1.0f/4.0f;
-    this->scale[1] = w*1.0f/4.0f;
+    this->scale[0] = h * 1.0f / 4.0f;
+    this->scale[1] = w * 1.0f / 4.0f;
 
     this->nFrames = nframes;
     this->shader = shaderProgram;
     this->texture = intexture;
-
 }
-
 
 void Rectangle::draw(float position[2])
 {
@@ -32,21 +28,18 @@ void Rectangle::draw(float position[2])
     this->shader.setVec2("uTranslate", position);
     this->shader.setVec2("uScale", this->scale);
     this->shader.setVec4("uColor", this->color);
-    this->shader.setFloat("uAspectRatio", (float)HEIGHT/WIDTH);
+    this->shader.setFloat("uAspectRatio", (float)HEIGHT / WIDTH);
 
     this->shader.setFloat("uNFrames", this->nFrames);
     this->shader.setFloat("uCurrentFrame", this->currentFrame);
 
     glDrawArrays(GL_TRIANGLES, 0, 6); // (primitiva, location, numero de vertices)
-
 }
-
 
 void Rectangle::setCurrentFrame(int n)
 {
     this->currentFrame = n;
 }
-
 
 void Rectangle::setColor(float newcolor[4])
 {
@@ -55,4 +48,3 @@ void Rectangle::setColor(float newcolor[4])
     this->color[2] = newcolor[2];
     this->color[3] = newcolor[3];
 }
-

@@ -1,18 +1,18 @@
-#include "BuffersAndGlobals.h"
+#include <jellyfish/Jellyfish.hpp>
 
 // Retorna o int da textura que foi alocada
-unsigned int createTexture(const char * textureName)
+unsigned int createTexture(const char *textureName)
 {
     unsigned int texture;
     // Textura-----------------------------------------------------------------
     glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D,texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     // set the texture wrapping/filtering options (on the currently bound texture object)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,  GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // load and generate the texture
     int tex_width, tex_height, nrChannels;
@@ -35,19 +35,19 @@ unsigned int createTexture(const char * textureName)
 // Cria o VAO e VBO Unicos
 void createBuffers(unsigned int &vao, unsigned int &vbo)
 {
-    
+
     // Centrado na origem
     float vertexData[] = {
-    //   Posições           //  texture coorinates
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // left bottom 
-         0.5f, -0.5f, 0.0f, 1.0f, 0.0f,// right bottom
-         0.5f,  0.5f, 0.0f, 1.0f, 1.0f,// top right
+        //   Posições           //  texture coorinates
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // left bottom
+        0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // right bottom
+        0.5f, 0.5f, 0.0f, 1.0f, 1.0f,   // top right
 
-         0.5f,  0.5f, 0.0f, 1.0f, 1.0f,// top right
-        -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,// top left
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f// left bottom
+        0.5f, 0.5f, 0.0f, 1.0f, 1.0f,  // top right
+        -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // top left
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f // left bottom
     };
-    
+
     /*
     // Centrado no canto esquerdo superior
     float vertexData[] = {
@@ -61,6 +61,7 @@ void createBuffers(unsigned int &vao, unsigned int &vbo)
          0.0f, -1.0f, 0.0f, 0.0f, 0.0f// left bottom
     };
     */
+
     // Buffers-----------------------------------------------------------------
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
@@ -73,14 +74,32 @@ void createBuffers(unsigned int &vao, unsigned int &vbo)
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
 
     // (location, size, GL_datatype, normalize, stride, pointer_to_start)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0); 
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-  
+
     //-------------------------------------------------
+}
+
+// Transforma uma coordenadas em pixel para coordenada no NDC
+float pixelXToNDC(int x)
+{
+    //de [0,width] para [-1,1]
+    // e de [0,height] para [1,-1]
+    return (2.0f * x - (float)WIDTH) / (float)WIDTH;
+}
+
+float NDCXToPixel(float x)
+{
+    return (x + 1) / 2.0 * WIDTH;
+}
+
+float pixelYToNDC(int y)
+{
+    return ((float)HEIGHT - 2.0f * y) / (float)HEIGHT;
 }

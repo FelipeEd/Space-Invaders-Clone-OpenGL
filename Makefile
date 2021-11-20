@@ -1,5 +1,9 @@
+SRCDIR = src/
+
+JELLIFISHDIR = $(SRCDIR) jellyfish/
+
 #Files that will be compiled
-OBJS =  stb_image.cpp buffersandglobals.cpp player.cpp entity.cpp rectangle.cpp shader.cpp main.cpp glad.c
+OBJS = $(addprefix src/jellyfish/, *.cpp) $(SRCDIR)stbi/stb_image.cpp main.cpp $(SRCDIR)glad/glad.c
 
 #Used compiler
 CC = g++
@@ -11,13 +15,13 @@ INCLUDE_PATHS = -Iinclude
 LIBRARY_PATHS = -Llibs
 
 #Aditional compile options
-COMPILER_FLAGS = 
+COMPILER_FLAGS = -g
 
 #Specifies which libraries we're linking
 LINKER_FLAGS = -lglfw3 -lOpenGL32
 
 #Executable name
-EXE_NAME = demo
+EXE_NAME = bin/demo
 
 #This is the target that compiles our executable
 all : $(OBJS)

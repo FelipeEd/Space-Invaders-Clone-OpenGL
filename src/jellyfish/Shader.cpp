@@ -1,8 +1,8 @@
-#include "Shader.hpp"
+#include <jellyfish/Jellyfish.hpp>
 
 Shader::Shader(){};
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath)
+Shader::Shader(const char *vertexPath, const char *fragmentPath)
 {
 	std::string vertexCode, fragmentCode;
 	std::ifstream vertexShaderFile, fragmentShaderFile;
@@ -25,15 +25,14 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 		fragmentShaderStream << fragmentShaderFile.rdbuf();
 		fragmentShaderFile.close();
 		fragmentCode = fragmentShaderStream.str();
-		
 	}
 	catch (std::ifstream::failure e)
 	{
 		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ" << std::endl;
 	}
 
-	const char* vertexShaderSource = vertexCode.c_str();
-	const char* fragmentShaderSource = fragmentCode.c_str();
+	const char *vertexShaderSource = vertexCode.c_str();
+	const char *fragmentShaderSource = fragmentCode.c_str();
 
 	unsigned int vertex, fragment;
 	int success;
@@ -47,7 +46,8 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	if (!success)
 	{
 		glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+				  << infoLog << std::endl;
 	}
 
 	// fragment Shader compilation
@@ -58,7 +58,8 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	if (!success)
 	{
 		glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
+				  << infoLog << std::endl;
 	}
 
 	// linking vertex and fragment shader into a program
@@ -71,7 +72,8 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	if (!success)
 	{
 		glGetProgramInfoLog(this->id, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
+				  << infoLog << std::endl;
 	}
 
 	// after program is created, free allocated resources for vertex and fragment shader
