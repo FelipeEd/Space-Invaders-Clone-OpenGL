@@ -1,98 +1,98 @@
 #include <jellyfish/Jellyfish.hpp>
 
-Entity::Entity(int posx, int posy, unsigned int texture, int nframes)
+Entity::Entity(float posx, float posy)
 {
-    this->position[0] = pixelXToNDC(posx);
-    this->position[1] = pixelYToNDC(posy);
-    rect = Rectangle(1.0f, 1.0f, texture, nframes);
+    this->position.x = posx;
+    this->position.y = posy;
+    hitbox = HitBox(this->getPosition(), 0.01f, 0.01f);
+    this->active = false;
 }
 
-Entity::Entity(int posx, int posy, float h, float w, unsigned int texture, int nframes)
+Entity::Entity(float posx, float posy, unsigned int texture, int nframes)
 {
-    rect = Rectangle(h, w, texture, nframes);
+    this->position.x = posx;
+    this->position.y = posy;
+    sprite = Sprite(0.25f, 0.25f, texture, nframes);
+    hitbox = HitBox(this->getPosition(), 0.25f * 0.7f, 0.25f * 0.7f);
+}
+
+Entity::Entity(float posx, float posy, float w, float h, unsigned int texture, int nframes)
+{
+    this->position.x = posx;
+    this->position.y = posy;
+    sprite = Sprite(w, h, texture, nframes);
+    hitbox = HitBox(this->getPosition(), w * 0.7f, h * 0.7f);
 }
 
 void Entity::draw()
 {
-    this->rect.draw(this->position);
-}
-
-void Entity::accelerate()
-{
-    this->speed[0] += this->accel[0];
-    this->speed[1] += this->accel[1];
+    if (this->active)
+        this->sprite.draw(this->position);
 }
 
 void Entity::move()
 {
-    this->position[0] += this->speed[0];
-    this->position[1] += this->speed[1];
+    this->position.x += this->speed.x;
+    this->position.y += this->speed.y;
+    hitbox.setPosition(this->position);
 }
 
 void Entity::moveInBounds()
 {
-    float newPosX = this->position[0] + this->speed[0];
-    float newPosY = this->position[1] + this->speed[1];
+    float newPosX = this->position.x + this->speed.x;
+    float newPosY = this->position.y + this->speed.y;
 
     if (abs(newPosX) < 1 && abs(newPosY) < 1)
     {
-        this->position[0] = newPosX;
-        this->position[1] = newPosY;
+        this->move();
     }
     else
     {
         // Resetar as velocidades e aceleração caso bater no canto da tela
-        this->accel[0] = 0.0f;
-        this->accel[1] = 0.0f;
-        this->speed[0] = 0.0f;
-        this->speed[1] = 0.0f;
+        this->speed.x = 0.0f;
+        this->speed.y = 0.0f;
     }
 }
 
 void Entity::debug()
 {
-    std::cout << std::fixed;
-    std::cout << "    Entity ::" << std::endl;
-    std::cout << "        Position :: "
-              << " x: " << this->getPosition()[0]
-              << " y: " << this->getPosition()[1] << std::endl;
-    std::cout << "        Speed    :: "
-              << " x: " << this->getSpeed()[0]
-              << " y: " << this->getSpeed()[1] << std::endl;
-    std::cout << "        Accel    :: "
-              << " x: " << this->getAccel()[0]
-              << " y: " << this->getAccel()[1] << std::endl;
-}
-
-void Entity::setAccel(float acx, float acy)
-{
-    this->accel[0] = acx;
-    this->accel[1] = acy;
+    if (this->active)
+    {
+        std::cout << std::fixed;
+        std::cout << "    Entity ::" << std::endl;
+        std::cout << "        Position :: "
+                  << " x: " << this->getPosition().x
+                  << " y: " << this->getPosition().y << std::endl;
+        std::cout << "        Speed    :: "
+                  << " x: " << this->getSpeed().x
+                  << " y: " << this->getSpeed().y << std::endl;
+    }
 }
 
 void Entity::setSpeed(float spx, float spy)
 {
-    this->speed[0] = spx;
-    this->speed[1] = spy;
+    this->speed.x = spx;
+    this->speed.y = spy;
 }
 
 void Entity::setPosition(float posx, float posy)
 {
-    this->position[0] = posx;
-    this->position[1] = posy;
+    this->position.x = posx;
+    this->position.y = posy;
+    hitbox.setPosition(this->position);
 }
 
-float *Entity::getAccel()
-{
-    return this->accel;
-}
-
-float *Entity::getSpeed()
+Point Entity::getSpeed()
 {
     return this->speed;
 }
 
-float *Entity::getPosition()
+Point Entity::getPosition()
 {
     return this->position;
+}
+
+Point Entity::getScale()
+{
+    return this->sprite.scale;
 }

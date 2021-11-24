@@ -8,7 +8,7 @@
             "name": "g++.exe - Criar e depurar o arquivo ativo",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}\\demo.exe",
+            "program": "${fileDirname}\\bin\\demo.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

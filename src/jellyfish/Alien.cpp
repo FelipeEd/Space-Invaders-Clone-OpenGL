@@ -2,25 +2,49 @@
 
 Alien::Alien(float posx, float posy, unsigned int texture, int nframes)
 {
-    this->initPos[0] = posx;
-    this->initPos[1] = posy;
+    this->initPos.x = posx;
+    this->initPos.y = posy;
     this->ship = Entity(posx, posy, texture, nframes);
+}
+
+void Alien::fire()
+{
+    this->gun.fire(this->ship.getPosition());
 }
 
 void Alien::draw()
 {
-    if (this->Alive)
-    {
+    this->gun.drawBullets();
+    if (this->ship.active)
         this->ship.draw();
+}
+
+void Alien::move(Entity empty)
+{
+    if (traveling)
+    {
+        this->warpArround(empty);
     }
+    else
+        this->ship.move();
+    this->gun.moveBullets();
 }
 
-void Alien::setPosition(float posx, float posy)
+void Alien::warpArround(Entity empty)
 {
-    this->ship.setPosition(posx, posy);
-}
+    this->ship.setSpeed(empty.getSpeed().x, -0.01);
+    this->ship.move();
 
-float *Alien::getPosition()
-{
-    return this->ship.getPosition();
+    if (this->ship.getPosition().y <= -1.05)
+    {
+        this->ship.setPosition(this->ship.getPosition().x, 1.25f);
+        this->warped = true;
+    }
+
+    if (this->ship.getPosition().y <= this->initPos.y && this->warped)
+    {
+        this->ship.setPosition(this->ship.getPosition().x, this->initPos.y);
+        this->traveling = false;
+        this->warped = false;
+    }
 }

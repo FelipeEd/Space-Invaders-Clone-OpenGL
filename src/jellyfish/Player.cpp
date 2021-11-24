@@ -7,7 +7,7 @@ Player::Player()
 void Player::update()
 {
 
-    float xdist = pixelXToNDC(mouseX) - this->getPosition()[0];
+    float xdist = pixelXToNDC(mouseX) - this->getPosition().x;
 
     // Verifica se o mouse esta a direita ou esquerda do player
     if (xdist > 0)
@@ -19,7 +19,6 @@ void Player::update()
         MoveLeft = true;
     }
 
-    // Obsoleto
     if (MoveRight)
     {
         this->ship.setSpeed(this->maxSpeed * abs(xdist), 0.0f);
@@ -30,22 +29,29 @@ void Player::update()
         this->ship.setSpeed(-this->maxSpeed * abs(xdist), 0.0f);
     }
 
-    //this->ship.accelerate();
-
     // Nao deixa a nave passar da velocidade maxima
-    if (abs(this->ship.getSpeed()[0]) > maxSpeed)
+    if (abs(this->ship.getSpeed().x) > maxSpeed)
     {
-        this->ship.setSpeed(ship.getSpeed()[0] * maxSpeed / abs(ship.getSpeed()[0]), 0.0f);
+        this->ship.setSpeed(ship.getSpeed().x * maxSpeed / abs(ship.getSpeed().x), 0.0f);
+    }
+
+    // Animation control
+    if (this->ship.getSpeed().x > 0.02)
+        this->ship.sprite.setCurrentFrame(1);
+    else if (this->ship.getSpeed().x < -0.02)
+        this->ship.sprite.setCurrentFrame(2);
+    else
+        this->ship.sprite.setCurrentFrame(0);
+
+    if (Fire)
+    {
+        Point firepos = this->getPosition();
+        firepos.y += 0.001f;
+        this->gun.fire(firepos);
     }
 
     this->gun.moveBullets();
     this->ship.moveInBounds();
-
-    if (Fire)
-    {
-        this->gun.fire(this->getPosition()[0], this->getPosition()[1] + 0.001f);
-    }
-
     // Reseta os inputs
     Fire = false;
     MoveLeft = false;
@@ -94,7 +100,7 @@ void Player::keyUpdate(GLFWwindow *window)
     //glfwGetCursorPos(window, &mouseX, &mouseY);
 }
 
-float *Player::getPosition()
+Point Player::getPosition()
 {
     return this->ship.getPosition();
 }

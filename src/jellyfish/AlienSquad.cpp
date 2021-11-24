@@ -2,43 +2,77 @@
 
 AlienSquad::~AlienSquad()
 {
-    delete this->Aliens;
+    delete[] this->Aliens;
 }
 
-AlienSquad::AlienSquad(Alien parentAlien, int pixelx, int pixely, int n, int m)
+AlienSquad::AlienSquad(Alien parentAlien, float posx, float posy, int n, int m, int timer)
 {
-    this->position[0] = pixelXToNDC(pixelx);
-    this->position[1] = pixelYToNDC(pixely);
+    // Dimenções do cluster
+    empty = Entity(posx, posy);
     this->n = n;
     this->m = m;
     this->Aliens = new Alien[n * m];
+    this->empty.setSpeed(this->speed.x, this->speed.y);
+    this->fireCooldown = timer;
 
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < m; j++)
         {
             Aliens[i * m + j] = parentAlien;
-            Aliens[i * m + j].setPosition(parentAlien.getPosition()[0] + clampDist * j, parentAlien.getPosition()[1] - clampDist * i);
-            Aliens[i * m + j].initPos[0] = Aliens[i * m + j].getPosition()[0];
-            Aliens[i * m + j].initPos[1] = Aliens[i * m + j].getPosition()[1];
+            Aliens[i * m + j].ship.setPosition(parentAlien.ship.getPosition().x + clampDist * j, parentAlien.ship.getPosition().y - clampDist * 16.0 / 9.0 * i);
+            Aliens[i * m + j].initPos = Aliens[i * m + j].ship.getPosition();
         }
     }
+    // Colocando o centro do squad no centro da tropa
+    this->empty.setPosition(Aliens[(n * m) / 2].ship.getPosition().x, Aliens[(n * m) / 2].ship.getPosition().y);
+}
+
+void AlienSquad::update(Player &player)
+{
+    this->move();
+    this->squadFire();
+    for (int i = 0; i < n * m; i++)
+    {
+        this->Aliens[i].gun.interact(player.ship);
+    }
+
+    if (rand() % 1000 < 5)
+    {
+        int index = rand() % (n * m);
+        this->Aliens[index].traveling = true;
+    }
+}
+
+void AlienSquad::squadFire()
+{
+    int alienIndex = rand() % (n * m);
+    //std::cout << "index " << alienIndex << "cooldown " << this->curentfireCooldown << std::endl;
+    if (this->Aliens[alienIndex].ship.active && this->curentfireCooldown == 0)
+    {
+        this->Aliens[alienIndex].fire();
+        this->curentfireCooldown = this->fireCooldown;
+    }
+    if (this->curentfireCooldown > 0)
+        this->curentfireCooldown--;
 }
 
 void AlienSquad::move()
 {
-    this->deltaX += 0.1f;
+    float moveRoom = 0.5f;
+    // movimeno lateral
+    if (this->empty.getPosition().x > moveRoom)
+        this->empty.setSpeed(-this->speed.x, 0.0f);
+
+    if (this->empty.getPosition().x < -moveRoom)
+        this->empty.setSpeed(this->speed.x, 0.0f);
+
+    this->empty.move();
+
     for (int i = 0; i < n * m; i++)
     {
-        float distx = 2 - n * this->clampDist;
-
-        float oldposx = this->Aliens[i].initPos[0];
-        float oldposy = this->Aliens[i].initPos[1];
-
-        float posx = this->Aliens[i].getPosition()[0];
-        float posy = this->Aliens[i].getPosition()[1];
-
-        this->Aliens[i].setPosition(oldposx, oldposy + sin((this->deltaX + oldposx) * 700) / 20);
+        this->Aliens[i].ship.setSpeed(this->empty.getSpeed().x, this->empty.getSpeed().y);
+        this->Aliens[i].move(this->empty);
     }
 }
 
@@ -50,14 +84,36 @@ void AlienSquad::draw()
     }
 }
 
+void AlienSquad::drawHitbox()
+{
+    for (int i = 0; i < n * m; i++)
+    {
+        if (this->Aliens[i].ship.active)
+        {
+            this->Aliens[i].ship.hitbox.draw();
+        }
+        this->Aliens[i].gun.drawBulletsHitBoxes();
+    }
+}
+
 void AlienSquad::debug()
 {
     std::cout << std::fixed;
     std::cout << "AlienSquad ::" << std::endl;
     for (int i = 0; i < n * m; i++)
     {
-        std::cout << "    Alien ::"
-                  << " x: " << this->Aliens[i].getPosition()[0]
-                  << " y: " << this->Aliens[i].getPosition()[1] << std::endl;
+        if (this->Aliens[i].ship.active)
+        {
+            std::cout << std::fixed;
+            std::cout << "    Alien"
+                      << " ::"
+                      << " Pos ::"
+                      << " x: " << this->Aliens[i].ship.getPosition().x
+                      << " y: " << this->Aliens[i].ship.getPosition().y
+                      << " ::"
+                      << " Speed :: "
+                      << " x: " << this->Aliens[i].ship.getSpeed().x
+                      << " y: " << this->Aliens[i].ship.getSpeed().y << std::endl;
+        }
     }
 }

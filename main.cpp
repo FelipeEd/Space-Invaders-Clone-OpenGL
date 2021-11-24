@@ -14,6 +14,7 @@ unsigned int vbo;
 // Texturas
 unsigned int texturePlayer;
 unsigned int textureBullet;
+unsigned int textureHitBox;
 
 // Colors
 float black[4] = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -56,102 +57,46 @@ int main()
     createBuffers(vao, vbo);
     texturePlayer = createTexture("bin/assets/Nave2SpriteSheet.png");
     textureBullet = createTexture("bin/assets/Bullet.png");
+    textureHitBox = createTexture("bin/assets/Hitbox.png");
+
     unsigned int texture1 = createTexture("bin/assets/Nave.png");
     unsigned int texture2 = createTexture("bin/assets/Nave2.png");
     unsigned int texture3 = createTexture("bin/assets/Alien1.png");
     unsigned int texture4 = createTexture("bin/assets/Alien1-256.png");
 
-    Entity rect1(0, 0, texture1, 1);
-    Entity rect2(WIDTH / 2, HEIGHT / 2, texture2, 1);
-    Entity rect3(WIDTH, HEIGHT, texture1, 1);
-    Entity rect4(0, HEIGHT, texture1, 1);
-    Entity rect5(WIDTH, 0, texture1, 1);
-    Entity rect6(WIDTH / 2, HEIGHT / 2, texture3, 1);
-    Entity rect7(WIDTH - 200, 300, texture4, 1);
-
-    Player player;
-
-    Alien alien1(WIDTH / 2, HEIGHT / 2, texture3, 1);
-    AlienSquad wave1(alien1, 0, 0, 4, 2);
-
-    double prevTime = 0.0;
-    double crntTime = 0.0;
-    double timeDiff;
-    unsigned int counter = 0;
-
-    bool gameIsPaused = false;
-    bool mouseRightIsPressed = false;
-    bool mouseMiddleIsPressed = false;
-    int pauseCooldown = 20;
-
-    // Loop da aplicação
     while (!glfwWindowShouldClose(window))
     {
-        // Input handling
-        processInput(window, mouseRightIsPressed, mouseMiddleIsPressed);
+        Player player;
 
-        crntTime = glfwGetTime();
-        timeDiff = crntTime - prevTime;
-        counter++;
-        // Coisas dependentes de tempo roda uma vez por frame
-        if (timeDiff >= 1.0 / 120.0)
+        Alien alien1(-1.0f, 0.8f, texture3, 1);
+        AlienSquad wave1(alien1, 0.0f, 0.0f, 4, 5, 10);
+
+        //Entity test(0.5f, 0, texturePlayer, 3);
+
+        double prevTime = 0.0;
+        double crntTime = 0.0;
+        double timeDiff;
+        unsigned int counter = 0;
+
+        bool gameIsPaused = false;
+        bool mouseRightIsPressed = false;
+        bool mouseMiddleIsPressed = false;
+        int pauseCooldown = 20;
+
+        // Loop da aplicação
+        while (player.ship.active && !glfwWindowShouldClose(window))
         {
-
-            std::string FPS = std::to_string((1.0 / timeDiff) * counter);
-            std::string ms = std::to_string((timeDiff / counter) * 1000);
-            std::string newTitle = "Space Invaders - " + FPS + "FPS /" + ms + "ms";
-            glfwSetWindowTitle(window, newTitle.c_str());
-            prevTime = crntTime;
-            counter = 0;
-
-            if (mouseRightIsPressed && pauseCooldown == 0)
-            {
-                gameIsPaused = !gameIsPaused;
-                pauseCooldown = 20;
-            }
-
-            if (pauseCooldown > 0)
-                pauseCooldown--;
-
-            mouseRightIsPressed = false;
-
-            player.keyUpdate(window);
-        }
-
-        // Render ----------------------------------------------------------------------
-        // Define a cor de fundo da janela
-        glClearColor(0.01f, 0.01f, 0.02f, 1.0f);
-        // Limpa algum buffer específico
-        glClear(GL_COLOR_BUFFER_BIT); // A limpeza do framebuffer de cor será feita com a cor definida em glClearColor
-
-        rect1.draw();
-        rect2.draw();
-        rect3.draw();
-        rect4.draw();
-        rect5.draw();
-        rect6.draw();
-        rect7.draw();
-
-        wave1.move();
-        wave1.draw();
-
-        player.update();
-        player.draw();
-
-        // Faz a troca do framebuffer antigo para o novo (double buffer)
-        glfwSwapBuffers(window);
-
-        // Main do jogo Pausado
-        while (gameIsPaused && !glfwWindowShouldClose(window))
-        {
-            mouseMiddleIsPressed = false;
+            // Input handling
             processInput(window, mouseRightIsPressed, mouseMiddleIsPressed);
 
             crntTime = glfwGetTime();
             timeDiff = crntTime - prevTime;
             counter++;
+
+            // Coisas dependentes de tempo roda uma vez por frame
             if (timeDiff >= 1.0 / 120.0)
             {
+
                 std::string FPS = std::to_string((1.0 / timeDiff) * counter);
                 std::string ms = std::to_string((timeDiff / counter) * 1000);
                 std::string newTitle = "Space Invaders - " + FPS + "FPS /" + ms + "ms";
@@ -164,30 +109,93 @@ int main()
                     gameIsPaused = !gameIsPaused;
                     pauseCooldown = 20;
                 }
-                if (mouseMiddleIsPressed && pauseCooldown == 0)
-                {
-                    player.debug();
-                    wave1.debug();
-                    gameIsPaused = false;
-                    pauseCooldown = 20;
-                }
+
                 if (pauseCooldown > 0)
                     pauseCooldown--;
 
                 mouseRightIsPressed = false;
 
-                glfwPollEvents();
+                player.keyUpdate(window);
             }
+
+            // Real loop ------------------------------------------------------------------------------------------
+
+            // Define a cor de fundo da janela
+            glClearColor(0.01f, 0.01f, 0.02f, 1.0f);
+            // Limpa algum buffer específico
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            wave1.update(player);
+
+            player.gun.interact(wave1);
+            //player.gun.interact(test);
+
+            player.update();
+
+            //test.draw();
+            wave1.draw();
+            player.draw();
+
+            // Main do jogo Pausado
+            if (gameIsPaused)
+            {
+                player.ship.hitbox.draw();
+                player.gun.drawBulletsHitBoxes();
+                //test.hitbox.draw();
+                wave1.drawHitbox();
+            }
+            // Faz a troca do framebuffer antigo para o novo (double buffer)
+            glfwSwapBuffers(window);
+
+            // Render ---------------------------------------------------------------------------------------------
+
+            while (gameIsPaused && !glfwWindowShouldClose(window))
+            {
+                mouseMiddleIsPressed = false;
+                processInput(window, mouseRightIsPressed, mouseMiddleIsPressed);
+
+                crntTime = glfwGetTime();
+                timeDiff = crntTime - prevTime;
+                counter++;
+                if (timeDiff >= 1.0 / 120.0)
+                {
+                    std::string FPS = std::to_string((1.0 / timeDiff) * counter);
+                    std::string ms = std::to_string((timeDiff / counter) * 1000);
+                    std::string newTitle = "Space Invaders - " + FPS + "FPS /" + ms + "ms";
+                    glfwSetWindowTitle(window, newTitle.c_str());
+                    prevTime = crntTime;
+                    counter = 0;
+
+                    if (mouseRightIsPressed && pauseCooldown == 0)
+                    {
+                        gameIsPaused = !gameIsPaused;
+                        pauseCooldown = 20;
+                    }
+                    if (mouseMiddleIsPressed && pauseCooldown == 0)
+                    {
+                        player.debug();
+                        //test.debug();
+                        wave1.debug();
+                        gameIsPaused = false;
+                        pauseCooldown = 20;
+                    }
+                    if (pauseCooldown > 0)
+                        pauseCooldown--;
+
+                    mouseRightIsPressed = false;
+
+                    glfwPollEvents();
+                }
+            }
+            if (mouseMiddleIsPressed)
+                gameIsPaused = true;
+
+            //------------------------------------------------------------------------------
+
+            // Captura eventos de IO (movimento de mouse, teclas pressionadas, etc)
+            glfwPollEvents();
         }
-        if (mouseMiddleIsPressed)
-            gameIsPaused = true;
-
-        //------------------------------------------------------------------------------
-
-        // Captura eventos de IO (movimento de mouse, teclas pressionadas, etc)
-        glfwPollEvents();
     }
-
     // Desalocar memória dos objetos instanciados
     glfwTerminate(); // Faz a limpeza dos recursos utilizados pelo GLFW
     return 0;

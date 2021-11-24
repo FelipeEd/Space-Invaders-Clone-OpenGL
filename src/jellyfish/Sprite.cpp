@@ -1,21 +1,21 @@
 #include <jellyfish/Jellyfish.hpp>
 
-Rectangle::Rectangle() {}
+Sprite::Sprite() {}
 
-Rectangle::Rectangle(float h, float w, unsigned int intexture, int nframes)
+Sprite::Sprite(float w, float h, unsigned int intexture, int nframes)
 {
 
     Shader shaderProgram("bin/shaders/vertex.glsl", "bin/shaders/fragment.glsl");
 
-    this->scale[0] = h * 1.0f / 4.0f;
-    this->scale[1] = w * 1.0f / 4.0f;
+    this->scale.x = w;
+    this->scale.y = h;
 
     this->nFrames = nframes;
     this->shader = shaderProgram;
     this->texture = intexture;
 }
 
-void Rectangle::draw(float position[2])
+void Sprite::draw(Point position)
 {
     // Desenhar o triangulo
     // 1- ativar shader
@@ -36,12 +36,12 @@ void Rectangle::draw(float position[2])
     glDrawArrays(GL_TRIANGLES, 0, 6); // (primitiva, location, numero de vertices)
 }
 
-void Rectangle::setCurrentFrame(int n)
+void Sprite::setCurrentFrame(int n)
 {
     this->currentFrame = n;
 }
 
-void Rectangle::setColor(float newcolor[4])
+void Sprite::setColor(float newcolor[4])
 {
     this->color[0] = newcolor[0];
     this->color[1] = newcolor[1];

@@ -101,9 +101,9 @@ void Shader::setFloat(const std::string &uniformName, float value) const
 	glUniform1f(glGetUniformLocation(this->id, uniformName.c_str()), value);
 }
 
-void Shader::setVec2(const std::string &uniformName, float value[2]) const
+void Shader::setVec2(const std::string &uniformName, Point value) const
 {
-	glUniform2f(glGetUniformLocation(this->id, uniformName.c_str()), value[0], value[1]);
+	glUniform2f(glGetUniformLocation(this->id, uniformName.c_str()), value.x, value.y);
 }
 
 void Shader::setVec4(const std::string &uniformName, float value[4]) const

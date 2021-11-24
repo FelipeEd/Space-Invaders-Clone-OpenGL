@@ -104,7 +104,7 @@ float pixelYToNDC(int y)
     return ((float)HEIGHT - 2.0f * y) / (float)HEIGHT;
 }
 
-void debug(Player player)
+void print(const char *msg)
 {
-    player.debug();
-}
+    std::cout << msg << std::endl;
+};

@@ -17,25 +17,41 @@ extern unsigned int vao;
 extern unsigned int vbo;
 
 extern float white[4];
+extern float red[4];
 
 extern unsigned int texturePlayer;
 extern unsigned int textureBullet;
+extern unsigned int textureHitBox;
+
+typedef struct Point
+{
+    float x;
+    float y;
+
+    bool operator==(Point b)
+    {
+        if (x == b.x && y == b.y)
+            return true;
+        else
+            return false;
+    }
+} Point;
 
 unsigned int createTexture(const char *textureName);
 void createBuffers(unsigned int &vao, unsigned int &vbo);
 float pixelXToNDC(int x);
 float NDCXToPixel(float x);
 float pixelYToNDC(int y);
+void print(const char *msg);
 
 class Shader;
-class Rectangle;
+class Sprite;
+class HitBox;
 class Entity;
 class Guns;
 class Player;
 class Alien;
 class AlienSquad;
-
-void debug(Player player);
 
 // Classe basica para compilar os shaders do openGL
 class Shader
@@ -54,19 +70,16 @@ public:
     void setBool(const std::string &uniformName, bool value) const;
     void setInt(const std::string &uniformName, int value) const;
     void setFloat(const std::string &uniformName, float value) const;
-    void setVec2(const std::string &uniformName, float value[2]) const;
+    void setVec2(const std::string &uniformName, Point value) const;
     void setVec4(const std::string &uniformName, float value[4]) const;
 };
 
 // Um objeto que tem como responsabilidade desenhar uma textura animada em uma posição dada
 // responsavel por controlar as animações (Interface direta com openGL)
-class Rectangle
+class Sprite
 {
 
 private:
-    // Dimensões do retangulo
-    float scale[2];
-
     // Cor RGBA, padrão branco
     float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -79,15 +92,36 @@ private:
     Shader shader;
 
 public:
-    Rectangle();
-    Rectangle(float h, float w, unsigned int intexture, int nframes);
+    // Dimensões do retangulo
+    Point scale;
+    Sprite();
+    Sprite(float w, float h, unsigned int intexture, int nframes);
 
     // Usa openGL para desenhar o retangulo, setando as uniforms.
-    void draw(float position[2]);
+    void draw(Point position);
     // Seta o frame atual da animação (começa em 0)
     void setCurrentFrame(int n);
     // Seta a cor a ser multiplicada pela textura
     void setColor(float newcolor[4]);
+};
+
+// Classe que cuida das colissões
+class HitBox
+{
+private:
+    // Do canto esquerdo superior no sentido horário
+    Point center, size;
+
+public:
+    Sprite aux;
+    HitBox() {}
+    // Recebe a posição altura e largura
+    HitBox(Point pos, float w, float h);
+    // Verifica colisão com outra hitbox
+    bool Hit(HitBox target);
+
+    void setPosition(Point pos);
+    void draw();
 };
 
 // Um Objeto genérico do programa, possui posição, velocidade e aceleração
@@ -96,24 +130,25 @@ class Entity
 {
 
 private:
-    Rectangle rect;
-
     // Vetores normalizados para NCD
-    float position[2] = {-100, -100};
-    float speed[2] = {0.0f, 0.0f};
-    float accel[2] = {0.0f, 0.0f};
+    Point position = {-100, -100};
+    Point speed = {0.0f, 0.0f};
 
 public:
+    bool active = true;
+    Sprite sprite;
+    HitBox hitbox;
+
     Entity(){};
+    // Invisivel
+    Entity(float posx, float posy);
     // Entidades quadradas
-    Entity(int posx, int posy, unsigned int texture, int nframes);
+    Entity(float posx, float posy, unsigned int texture, int nframes);
     // Entidades retangulares
-    Entity(int posx, int posy, float h, float w, unsigned int texture, int nframes);
+    Entity(float posx, float posy, float w, float h, unsigned int texture, int nframes);
 
     // Chama a função draw do retangulo associado a entidade
     void draw();
-    // Altera a velocidade baseada na aceleração
-    void accelerate();
     // Move o retangulo baseado na velocidade atual
     void move();
     // Move o retangulo baseado na velocidade atual mantendo na tela
@@ -123,19 +158,16 @@ public:
 
     // Autopiloto simples para chegar em um ponto controlando a aceleração
 
-    // Define a Aceleração atual
-    void setAccel(float acx, float acy);
-    // Define a Velocidade atual
     void setSpeed(float spx, float spy);
     // Define a Posição atual
     void setPosition(float posx, float posy);
 
-    // Retorna a Aceleração atual
-    float *getAccel();
     // Retorna a Velocidade atual
-    float *getSpeed();
+    Point getSpeed();
     // Retorna a Posição atual
-    float *getPosition();
+    Point getPosition();
+    // Retorna a Scale
+    Point getScale();
 };
 
 class Guns
@@ -158,15 +190,23 @@ public:
     // Qual dos tipos de arma
     Guns(int type);
     // Dispara a arma
-    void fire(float posx, float posy);
+    void fire(Point pos);
     // Reseta o numero de balas
     void reload();
     // Deve ser usada em um update por segundo
     void countCoolDown();
     // Atualiza a posição das balas
     void moveBullets();
+    // Detecta colisoes com o squad de aliens
+    void interact(AlienSquad &aliens);
+    // Detecta colisões com entidades quaisquer
+    void interact(Entity &target);
+    // O que faze quando colidir
+    void onHit(Entity &currentBullet);
     // Desenha as balas na tela
     void drawBullets();
+    // Desenha as hitbox das balas
+    void drawBulletsHitBoxes();
     // Debug
     void debug();
 };
@@ -174,10 +214,6 @@ public:
 class Player
 {
 private:
-    Entity ship = Entity(WIDTH / 2, (int)HEIGHT * 0.9f, texturePlayer, 3);
-
-    Guns gun = Guns(1);
-
     // Aceleração maxima da nave
     float currentAccel = 0.01f;
     float maxSpeed = 0.1f;
@@ -190,53 +226,67 @@ private:
     bool MoveRight = false;
 
 public:
+    Entity ship = Entity(0, -0.8f, texturePlayer, 3);
+    Guns gun = Guns(1);
+
     Player();
     // Roda a cada iteração do main principal
     void update();
     // Desenha o nave do player
     void draw();
+
     // Notifica o player do status de cada input possivel e roda a cada frame
     void keyUpdate(GLFWwindow *window);
     void debug();
+
     // Retorna a posição do player
-    float *getPosition();
+    Point getPosition();
 };
 
 // Classe para um alien individual
 class Alien
 {
-private:
+public:
     int hitpoints = 5;
     Entity ship;
-    bool Alive = true;
     Guns gun = Guns(0);
+    bool traveling = false;
+    bool warped = false;
 
-public:
-    float initPos[2];
+    Point initPos;
     Alien() {}
     Alien(float posx, float posy, unsigned int texture, int nframes);
+    void fire();
     void draw();
-
-    void setPosition(float posx, float posy);
-
-    float *getPosition();
+    void move(Entity empty);
+    void warpArround(Entity empty);
 };
 
 // Classe que controla o cluster de aliens do mesmo tipo
 class AlienSquad
 {
 private:
-    float position[2];
-    int n, m;
-    float clampDist = 0.2f;
+    Entity empty;
+    Point speed = {0.002f, 0.0f};
+    float clampDist = 0.15f;
+    int curentfireCooldown = 0;
+    int fireCooldown;
     float deltaX, deltaY;
-    Alien *Aliens;
 
 public:
+    int n, m;
+    Alien *Aliens;
+
     ~AlienSquad();
-    AlienSquad(Alien parentAlien, int pixelx, int pixely, int n, int m);
+    // Gera um cluster de aliens copiandos as propriedasdes do parent alien
+    AlienSquad(Alien parentAlien, float posx, float posy, int n, int m, int timer);
+
+    void update(Player &player);
+    // Faz algum alien atacar;
+    void squadFire();
 
     void move();
     void draw();
+    void drawHitbox();
     void debug();
 };
