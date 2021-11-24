@@ -8,6 +8,10 @@
 #include <fstream>
 #include <sstream>
 #include <math.h>
+#include <windows.h>
+#include <mmsystem.h>
+//these two headers are already included in the <Windows.h> header
+#pragma comment(lib, "Winmm.lib")
 
 // variaveis globais do main
 extern unsigned int WIDTH;
@@ -185,6 +189,8 @@ private:
     int maxAmmo = 0;
     // Munição atual
     int currentAmmo = 0;
+    // Dano por hit
+    float damage;
 
 public:
     // Qual dos tipos de arma
@@ -200,7 +206,7 @@ public:
     // Detecta colisoes com o squad de aliens
     void interact(AlienSquad &aliens);
     // Detecta colisões com entidades quaisquer
-    void interact(Entity &target);
+    void interact(Player &Player);
     // O que faze quando colidir
     void onHit(Entity &currentBullet);
     // Desenha as balas na tela
@@ -214,6 +220,7 @@ public:
 class Player
 {
 private:
+    float vida = 100.0f;
     // Aceleração maxima da nave
     float currentAccel = 0.01f;
     float maxSpeed = 0.1f;
@@ -235,6 +242,7 @@ public:
     // Desenha o nave do player
     void draw();
 
+    void takeDamage(float hit);
     // Notifica o player do status de cada input possivel e roda a cada frame
     void keyUpdate(GLFWwindow *window);
     void debug();
@@ -247,7 +255,7 @@ public:
 class Alien
 {
 public:
-    int hitpoints = 5;
+    float vida;
     Entity ship;
     Guns gun = Guns(0);
     bool traveling = false;
@@ -258,6 +266,7 @@ public:
     Alien(float posx, float posy, unsigned int texture, int nframes);
     void fire();
     void draw();
+    void takeDamage(float hit);
     void move(Entity empty);
     void warpArround(Entity empty);
 };
@@ -268,7 +277,7 @@ class AlienSquad
 private:
     Entity empty;
     Point speed = {0.002f, 0.0f};
-    float clampDist = 0.15f;
+    float clampDist = 0.10f;
     int curentfireCooldown = 0;
     int fireCooldown;
     float deltaX, deltaY;

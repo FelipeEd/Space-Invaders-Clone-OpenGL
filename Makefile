@@ -18,7 +18,7 @@ LIBRARY_PATHS = -Llibs
 COMPILER_FLAGS = -g
 
 #Specifies which libraries we're linking
-LINKER_FLAGS = -lglfw3 -lOpenGL32
+LINKER_FLAGS = -lglfw3 -lOpenGL32 -lwinmm
 
 #Executable name
 EXE_NAME = bin/demo

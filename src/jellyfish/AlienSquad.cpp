@@ -34,7 +34,7 @@ void AlienSquad::update(Player &player)
     this->squadFire();
     for (int i = 0; i < n * m; i++)
     {
-        this->Aliens[i].gun.interact(player.ship);
+        this->Aliens[i].gun.interact(player);
     }
 
     if (rand() % 1000 < 5)

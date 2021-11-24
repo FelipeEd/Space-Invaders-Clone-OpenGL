@@ -1,7 +1,7 @@
 #include <jellyfish/Jellyfish.hpp>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-void processInput(GLFWwindow *window, bool &gameIsPaused, bool &mouseMiddleisPressed);
+void processInput(GLFWwindow *window, bool &gameIsPaused, bool &mouseMiddleisPressed, bool &Reset);
 
 // Global
 // Tamanho da janela
@@ -66,8 +66,10 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
-        Player player;
+        mciSendString("open \"bin\\assets\\SpaceTheme.mp3\" type mpegvideo alias mp3", NULL, 0, NULL);
+        mciSendString("play mp3 repeat", NULL, 0, NULL);
 
+        Player player;
         Alien alien1(-1.0f, 0.8f, texture3, 1);
         AlienSquad wave1(alien1, 0.0f, 0.0f, 4, 5, 10);
 
@@ -81,13 +83,14 @@ int main()
         bool gameIsPaused = false;
         bool mouseRightIsPressed = false;
         bool mouseMiddleIsPressed = false;
+        bool Reset = false;
         int pauseCooldown = 20;
 
         // Loop da aplicação
-        while (player.ship.active && !glfwWindowShouldClose(window))
+        while ((Reset || player.ship.active) && !glfwWindowShouldClose(window))
         {
             // Input handling
-            processInput(window, mouseRightIsPressed, mouseMiddleIsPressed);
+            processInput(window, mouseRightIsPressed, mouseMiddleIsPressed, Reset);
 
             crntTime = glfwGetTime();
             timeDiff = crntTime - prevTime;
@@ -152,7 +155,7 @@ int main()
             while (gameIsPaused && !glfwWindowShouldClose(window))
             {
                 mouseMiddleIsPressed = false;
-                processInput(window, mouseRightIsPressed, mouseMiddleIsPressed);
+                processInput(window, mouseRightIsPressed, mouseMiddleIsPressed, Reset);
 
                 crntTime = glfwGetTime();
                 timeDiff = crntTime - prevTime;
@@ -202,7 +205,7 @@ int main()
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-void processInput(GLFWwindow *window, bool &mouseRightIsPressed, bool &mouseMiddleIsPressed)
+void processInput(GLFWwindow *window, bool &mouseRightIsPressed, bool &mouseMiddleIsPressed, bool &Reset)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
@@ -216,6 +219,10 @@ void processInput(GLFWwindow *window, bool &mouseRightIsPressed, bool &mouseMidd
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
     {
         mouseMiddleIsPressed = true;
+    }
+    if (glfwGetMouseButton(window, GLFW_KEY_R) == GLFW_PRESS)
+    {
+        Reset = true;
     }
 }
 

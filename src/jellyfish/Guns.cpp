@@ -9,7 +9,7 @@ Guns::Guns(int type)
         this->maxAmmo = 9999999;
         this->currentAmmo = maxAmmo;
         this->fireCooldown = 0;
-
+        this->damage = 20.0f;
         for (auto &bullet : bullets)
         {
             bullet = Entity(-100, -100, 0.1f, 0.1f, textureBullet, 1);
@@ -25,7 +25,7 @@ Guns::Guns(int type)
         this->maxAmmo = 9999999;
         this->currentAmmo = maxAmmo;
         this->fireCooldown = 15;
-
+        this->damage = 20;
         for (auto &bullet : bullets)
         {
             bullet = Entity(-100, -100, 0.1f, 0.1f, textureBullet, 1);
@@ -89,7 +89,8 @@ void Guns::interact(AlienSquad &aliens)
                 {
                     if (bullet.hitbox.Hit(aliens.Aliens[i].ship.hitbox))
                     {
-                        aliens.Aliens[i].ship.active = false;
+
+                        aliens.Aliens[i].takeDamage(this->damage);
                         this->onHit(bullet);
                     }
                 }
@@ -98,15 +99,15 @@ void Guns::interact(AlienSquad &aliens)
     }
 }
 
-void Guns::interact(Entity &target)
+void Guns::interact(Player &player)
 {
     for (auto &bullet : this->bullets)
     {
         if (bullet.active)
         {
-            if (bullet.hitbox.Hit(target.hitbox))
+            if (bullet.hitbox.Hit(player.ship.hitbox))
             {
-                target.active = false;
+                player.takeDamage(this->damage);
                 this->onHit(bullet);
             }
         }
@@ -115,6 +116,8 @@ void Guns::interact(Entity &target)
 
 void Guns::onHit(Entity &currentBullet)
 {
+    if (this->type == 0)
+        currentBullet.active = false;
     if (this->type == 1)
         currentBullet.active = false;
 }

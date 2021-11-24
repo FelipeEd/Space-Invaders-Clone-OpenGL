@@ -12,8 +12,8 @@ Entity::Entity(float posx, float posy, unsigned int texture, int nframes)
 {
     this->position.x = posx;
     this->position.y = posy;
-    sprite = Sprite(0.25f, 0.25f, texture, nframes);
-    hitbox = HitBox(this->getPosition(), 0.25f * 0.7f, 0.25f * 0.7f);
+    sprite = Sprite(0.15f, 0.15f, texture, nframes);
+    hitbox = HitBox(this->getPosition(), 0.15f * 0.7f, 0.15f * 0.7f);
 }
 
 Entity::Entity(float posx, float posy, float w, float h, unsigned int texture, int nframes)

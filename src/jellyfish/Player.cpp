@@ -45,6 +45,7 @@ void Player::update()
 
     if (Fire)
     {
+        sndPlaySound("bin\\assets\\test.wav", SND_FILENAME | SND_ASYNC);
         Point firepos = this->getPosition();
         firepos.y += 0.001f;
         this->gun.fire(firepos);
@@ -61,7 +62,20 @@ void Player::update()
 void Player::draw()
 {
     this->gun.drawBullets();
-    this->ship.draw();
+    if (this->vida >= 50.0f)
+        this->ship.draw();
+    else
+    {
+        this->ship.sprite.setColor(red);
+        this->ship.draw();
+    }
+}
+
+void Player::takeDamage(float hit)
+{
+    this->vida -= hit;
+    if (vida <= 0)
+        this->ship.active = false;
 }
 
 void Player::keyUpdate(GLFWwindow *window)
