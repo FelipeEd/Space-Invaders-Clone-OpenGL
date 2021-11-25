@@ -9,13 +9,58 @@ Guns::Guns(int type)
         this->maxAmmo = 9999999;
         this->currentAmmo = maxAmmo;
         this->fireCooldown = 0;
+        this->damage = 50.0f;
+        for (auto &bullet : bullets)
+        {
+            bullet = Entity(-100, -100, 0.2f, 0.2f, textureBullet2, 1);
+            bullet.sprite.setColor(red);
+            bullet.active = false;
+            bullet.setSpeed(0.0f, -0.005f);
+        }
+    }
+    // Alien ammo 2
+    if (type == 2)
+    {
+        this->maxAmmo = 9999999;
+        this->currentAmmo = maxAmmo;
+        this->fireCooldown = 0;
         this->damage = 20.0f;
         for (auto &bullet : bullets)
         {
-            bullet = Entity(-100, -100, 0.1f, 0.1f, textureBullet, 1);
-            bullet.sprite.setColor(red);
+            bullet = Entity(-100, -100, 0.1f, 0.1f, textureBullet3, 1);
+
             bullet.active = false;
             bullet.setSpeed(0.0f, -0.02f);
+        }
+    }
+    // Alien ammo 3
+    if (type == 4)
+    {
+        this->maxAmmo = 9999999;
+        this->currentAmmo = maxAmmo;
+        this->fireCooldown = 0;
+        this->damage = 10.0f;
+        for (auto &bullet : bullets)
+        {
+            bullet = Entity(-100, -100, 0.2f, 0.2f, textureBullet4, 1);
+
+            bullet.active = false;
+            bullet.setSpeed(0.0f, -0.02f);
+        }
+    }
+    // Alien ammo 4
+    if (type == 6)
+    {
+        this->maxAmmo = 9999999;
+        this->currentAmmo = maxAmmo;
+        this->fireCooldown = 0;
+        this->damage = 5.0f;
+        for (auto &bullet : bullets)
+        {
+            bullet = Entity(-100, -100, 0.05f, 0.05f, textureBullet3, 1);
+            bullet.sprite.setColor(blue);
+            bullet.active = false;
+            bullet.setSpeed(0.0f, -0.04f);
         }
     }
 
@@ -24,11 +69,11 @@ Guns::Guns(int type)
     {
         this->maxAmmo = 9999999;
         this->currentAmmo = maxAmmo;
-        this->fireCooldown = 15;
+        this->fireCooldown = 20;
         this->damage = 20;
         for (auto &bullet : bullets)
         {
-            bullet = Entity(-100, -100, 0.1f, 0.1f, textureBullet, 1);
+            bullet = Entity(-100, -100, 0.1f, 0.1f, textureBullet1, 1);
             bullet.active = false;
             bullet.setSpeed(0.0f, 0.03f);
         }
@@ -92,6 +137,10 @@ void Guns::interact(AlienSquad &aliens)
 
                         aliens.Aliens[i].takeDamage(this->damage);
                         this->onHit(bullet);
+                        if (aliens.Aliens[i].ship.active == false)
+                        {
+                            this->Score += 100 / aliens.Aliens[i].type;
+                        }
                     }
                 }
             }
@@ -116,10 +165,8 @@ void Guns::interact(Player &player)
 
 void Guns::onHit(Entity &currentBullet)
 {
-    if (this->type == 0)
-        currentBullet.active = false;
-    if (this->type == 1)
-        currentBullet.active = false;
+
+    currentBullet.active = false;
 }
 
 void Guns::drawBullets()

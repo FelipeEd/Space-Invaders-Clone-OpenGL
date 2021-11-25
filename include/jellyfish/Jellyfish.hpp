@@ -22,10 +22,18 @@ extern unsigned int vbo;
 
 extern float white[4];
 extern float red[4];
+extern float blue[4];
 
 extern unsigned int texturePlayer;
-extern unsigned int textureBullet;
+
+extern unsigned int textureBullet1;
+extern unsigned int textureBullet2;
+extern unsigned int textureBullet3;
+extern unsigned int textureBullet4;
+
 extern unsigned int textureHitBox;
+
+extern char laser1[100000];
 
 typedef struct Point
 {
@@ -183,8 +191,7 @@ private:
     int countCurrentBullet = 0;
     // cooldown fixo da arma
     int fireCooldown = 10;
-    // cooldown atual (só dispara quando zeradp)
-    int currentfireCooldown = 0;
+
     // Máximo de munição possivel
     int maxAmmo = 0;
     // Munição atual
@@ -193,6 +200,10 @@ private:
     float damage;
 
 public:
+    unsigned int Score = 0;
+    // cooldown atual (só dispara quando zeradp)
+    int currentfireCooldown = 0;
+    Guns() {}
     // Qual dos tipos de arma
     Guns(int type);
     // Dispara a arma
@@ -256,14 +267,18 @@ class Alien
 {
 public:
     float vida;
+    float vidaMax;
+    unsigned int points = 10;
+    int type;
     Entity ship;
-    Guns gun = Guns(0);
+    Guns gun;
     bool traveling = false;
     bool warped = false;
+    int TravelingChance;
 
     Point initPos;
     Alien() {}
-    Alien(float posx, float posy, unsigned int texture, int nframes);
+    Alien(float posx, float posy, unsigned int texture, int nframes, int type);
     void fire();
     void draw();
     void takeDamage(float hit);
@@ -284,6 +299,7 @@ private:
 
 public:
     int n, m;
+    bool Alive = true;
     Alien *Aliens;
 
     ~AlienSquad();

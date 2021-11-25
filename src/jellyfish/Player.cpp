@@ -45,7 +45,11 @@ void Player::update()
 
     if (Fire)
     {
-        sndPlaySound("bin\\assets\\test.wav", SND_FILENAME | SND_ASYNC);
+        if (this->gun.currentfireCooldown == 0)
+        {
+            sndPlaySound(laser1, SND_MEMORY | SND_ASYNC);
+        }
+
         Point firepos = this->getPosition();
         firepos.y += 0.001f;
         this->gun.fire(firepos);

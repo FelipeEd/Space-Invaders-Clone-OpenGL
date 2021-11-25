@@ -1,11 +1,44 @@
 #include <jellyfish/Jellyfish.hpp>
 
-Alien::Alien(float posx, float posy, unsigned int texture, int nframes)
+Alien::Alien(float posx, float posy, unsigned int texture, int nframes, int type)
 {
     this->initPos.x = posx;
     this->initPos.y = posy;
     this->ship = Entity(posx, posy, texture, nframes);
-    this->vida = 40.0f;
+    this->type = type;
+    // O dourado
+    if (this->type == 1)
+    {
+        this->vidaMax = 80.0f;
+        this->vida = this->vidaMax;
+        this->gun = Guns(0);
+        this->TravelingChance = 10;
+    }
+    // O verde
+    if (this->type == 2)
+    {
+        this->vidaMax = 60.0f;
+        this->vida = this->vidaMax;
+        this->gun = Guns(2);
+        this->TravelingChance = 5;
+    }
+    // O roxo
+    if (this->type == 3)
+    {
+        this->vidaMax = 40.0f;
+        this->vida = this->vidaMax;
+        this->gun = Guns(4);
+        this->TravelingChance = 5;
+    }
+    // O azul
+    if (this->type == 4)
+    {
+        this->vidaMax = 40.0f;
+        this->vida = this->vidaMax;
+        this->gun = Guns(6);
+        this->TravelingChance = 1;
+        //this->ship = Entity(posx, posy, 0.1f, 0.1f, texture, nframes);
+    }
 }
 
 void Alien::fire()
@@ -25,8 +58,10 @@ void Alien::draw()
     this->gun.drawBullets();
     if (this->ship.active)
     {
-        if (this->vida > 20.0f)
+        if (this->vida > this->vidaMax / 2.0)
+        {
             this->ship.draw();
+        }
         else
         {
             this->ship.sprite.setColor(red);

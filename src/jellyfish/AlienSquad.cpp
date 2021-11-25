@@ -37,7 +37,7 @@ void AlienSquad::update(Player &player)
         this->Aliens[i].gun.interact(player);
     }
 
-    if (rand() % 1000 < 5)
+    if (rand() % 1000 < this->Aliens[0].TravelingChance)
     {
         int index = rand() % (n * m);
         this->Aliens[index].traveling = true;
@@ -60,6 +60,7 @@ void AlienSquad::squadFire()
 void AlienSquad::move()
 {
     float moveRoom = 0.5f;
+    int countAlive = 0;
     // movimeno lateral
     if (this->empty.getPosition().x > moveRoom)
         this->empty.setSpeed(-this->speed.x, 0.0f);
@@ -73,6 +74,13 @@ void AlienSquad::move()
     {
         this->Aliens[i].ship.setSpeed(this->empty.getSpeed().x, this->empty.getSpeed().y);
         this->Aliens[i].move(this->empty);
+        if (this->Aliens[i].ship.active)
+            countAlive++;
+    }
+
+    if (countAlive == 0)
+    {
+        this->Alive = false;
     }
 }
 
@@ -105,7 +113,7 @@ void AlienSquad::debug()
         if (this->Aliens[i].ship.active)
         {
             std::cout << std::fixed;
-            std::cout << "    Alien"
+            std::cout << "    Alien " << this->Aliens[i].type
                       << " ::"
                       << " Pos ::"
                       << " x: " << this->Aliens[i].ship.getPosition().x
@@ -114,6 +122,7 @@ void AlienSquad::debug()
                       << " Speed :: "
                       << " x: " << this->Aliens[i].ship.getSpeed().x
                       << " y: " << this->Aliens[i].ship.getSpeed().y << std::endl;
+            this->Aliens[i].gun.debug();
         }
     }
 }
