@@ -8,6 +8,10 @@
 #include <fstream>
 #include <sstream>
 #include <math.h>
+#include <chrono>
+#include <thread>
+using namespace std::this_thread; // sleep_for, sleep_until
+using namespace std::chrono;
 #include <windows.h>
 #include <mmsystem.h>
 //these two headers are already included in the <Windows.h> header
@@ -23,9 +27,9 @@ extern unsigned int vbo;
 extern float white[4];
 extern float red[4];
 extern float blue[4];
+extern float magenta[4];
 
 extern unsigned int texturePlayer;
-
 extern unsigned int textureBullet1;
 extern unsigned int textureBullet2;
 extern unsigned int textureBullet3;
@@ -33,7 +37,9 @@ extern unsigned int textureBullet4;
 
 extern unsigned int textureHitBox;
 
-extern char laser1[100000];
+extern unsigned int Score;
+
+extern char laser1[30000];
 
 typedef struct Point
 {
@@ -49,13 +55,6 @@ typedef struct Point
     }
 } Point;
 
-unsigned int createTexture(const char *textureName);
-void createBuffers(unsigned int &vao, unsigned int &vbo);
-float pixelXToNDC(int x);
-float NDCXToPixel(float x);
-float pixelYToNDC(int y);
-void print(const char *msg);
-
 class Shader;
 class Sprite;
 class HitBox;
@@ -64,6 +63,17 @@ class Guns;
 class Player;
 class Alien;
 class AlienSquad;
+
+extern Shader shaderProgram;
+
+unsigned int createTexture(const char *textureName);
+void createBuffers(unsigned int &vao, unsigned int &vbo, Shader &shaderProgram);
+float pixelXToNDC(int x);
+float NDCXToPixel(float x);
+float pixelYToNDC(int y);
+void print(const char *msg);
+void DisplayScore(Sprite numbers);
+void SaveScore(unsigned int Score);
 
 // Classe basica para compilar os shaders do openGL
 class Shader
@@ -84,6 +94,7 @@ public:
     void setFloat(const std::string &uniformName, float value) const;
     void setVec2(const std::string &uniformName, Point value) const;
     void setVec4(const std::string &uniformName, float value[4]) const;
+    void Delete() const;
 };
 
 // Um objeto que tem como responsabilidade desenhar uma textura animada em uma posição dada
@@ -200,7 +211,6 @@ private:
     float damage;
 
 public:
-    unsigned int Score = 0;
     // cooldown atual (só dispara quando zeradp)
     int currentfireCooldown = 0;
     Guns() {}
@@ -243,9 +253,13 @@ private:
     bool MoveLeft = false;
     bool MoveRight = false;
 
+    bool changeGun = false;
+    int changeGunCooldown = 0;
+
 public:
-    Entity ship = Entity(0, -0.8f, texturePlayer, 3);
-    Guns gun = Guns(1);
+    Entity ship;
+    Guns gun[2];
+    int currentGun = 0;
 
     Player();
     // Roda a cada iteração do main principal

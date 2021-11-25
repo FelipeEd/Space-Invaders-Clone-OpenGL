@@ -1,7 +1,7 @@
 #include <jellyfish/Jellyfish.hpp>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-void processInput(GLFWwindow *window, bool &gameIsPaused, bool &mouseMiddleisPressed, bool &rIsPressed);
+void processInput(GLFWwindow *window, bool &mouseLeftIsPressed, bool &mouseRightIsPressed, bool &mouseMiddleIsPressed, bool &rIsPressed);
 
 // Global
 // Tamanho da janela
@@ -10,16 +10,7 @@ unsigned int HEIGHT = 900; //720;
 
 unsigned int vao;
 unsigned int vbo;
-
-// Texturas
-unsigned int texturePlayer;
-unsigned int textureBullet;
-unsigned int textureBullet1;
-unsigned int textureBullet2;
-unsigned int textureBullet3;
-unsigned int textureBullet4;
-
-unsigned int textureHitBox;
+Shader shaderProgram;
 
 // Colors
 float black[4] = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -28,8 +19,18 @@ float blue[4] = {0.0f, 1.0f, 1.0f, 1.0f};
 float red[4] = {1.0f, 0.0f, 0.0f, 1.0f};
 float magenta[4] = {1.0f, 1.0f, 0.0f, 1.0f};
 
-FILE *f1;
-char laser1[100000];
+// Texturas
+unsigned int texturePlayer;
+unsigned int textureBullet1;
+unsigned int textureBullet2;
+unsigned int textureBullet3;
+unsigned int textureBullet4;
+
+unsigned int textureHitBox;
+
+unsigned int Score = 0;
+
+char laser1[30000];
 
 int main()
 {
@@ -58,12 +59,14 @@ int main()
         return -1;
     }
     glfwSwapInterval(1);
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //-------------------------------------------------
     // Buffers e texturas
 
-    createBuffers(vao, vbo);
+    createBuffers(vao, vbo, shaderProgram);
+
     texturePlayer = createTexture("bin/assets/Nave2SpriteSheet.png");
 
     textureBullet1 = createTexture("bin/assets/Bullet1.png");
@@ -73,36 +76,43 @@ int main()
 
     textureHitBox = createTexture("bin/assets/Hitbox.png");
 
-    unsigned int texture1 = createTexture("bin/assets/Nave.png");
     unsigned int textureAlien1 = createTexture("bin/assets/Alien1.png");
     unsigned int textureAlien2 = createTexture("bin/assets/Alien2.png");
     unsigned int textureAlien3 = createTexture("bin/assets/Alien3.png");
     unsigned int textureAlien4 = createTexture("bin/assets/Alien4.png");
-    //unsigned int texture4 = createTexture("bin/assets/Alien1-256.png");
-    unsigned int textureBackground = createTexture("bin/assets/Background.png");
 
-    // Audio
+    unsigned int textureBackground = createTexture("bin/assets/Background.png");
+    unsigned int textureLose = createTexture("bin/assets/lose.png");
+    unsigned int textureWin = createTexture("bin/assets/win.png");
+    unsigned int textureTitle = createTexture("bin/assets/title.png");
+    unsigned int textureNumbers = createTexture("bin/assets/numbers.png");
+
+    // // Audio
+    FILE *f1;
     f1 = fopen("bin\\assets\\laser1.wav", "r");
-    fread(&laser1, sizeof(char), 100000, f1);
+    fread(&laser1, sizeof(char), 30000, f1);
     fclose(f1);
 
     mciSendString("open \"bin\\assets\\SpaceTheme.mp3\" type mpegvideo alias mp3", NULL, 0, NULL);
     mciSendString("play mp3 repeat", NULL, 0, NULL);
 
+    Sprite numbers(0.05f, 0.05f, textureNumbers, 10);
+    Sprite title(2.0f * WIDTH / HEIGHT, 2.0f, textureTitle, 1);
+
     while (!glfwWindowShouldClose(window))
     {
 
-        Player player;
+        Player player = Player();
 
         Alien alien1(-1.0f, 0.8f, textureAlien1, 1, 1);
         Alien alien2(-1.0f, 0.65f, textureAlien2, 1, 2);
         Alien alien3(-1.0f, 0.50f, textureAlien3, 1, 3);
-        Alien alien4(-0.85f, 0.05f, textureAlien4, 1, 4);
+        Alien alien4(-1.0f, 0.05f, textureAlien4, 1, 4);
 
         AlienSquad wave1(alien1, 0.0f, 0.0f, 1, 5, 150);
         AlienSquad wave2(alien2, 0.0f, 0.0f, 1, 5, 60);
         AlienSquad wave3(alien3, 0.0f, 0.0f, 3, 5, 30);
-        AlienSquad wave4(alien4, 0.0f, 0.0f, 1, 3, 20);
+        AlienSquad wave4(alien4, 0.0f, 0.0f, 1, 5, 20);
 
         Entity background(0, 0, 2.0f * WIDTH / HEIGHT, 2.0f, textureBackground, 1);
         //Entity test(0.5f, 0, texturePlayer, 3);
@@ -113,19 +123,41 @@ int main()
         unsigned int counter = 0;
 
         bool gameIsPaused = false;
+        bool gameInTitle = true;
         bool mouseRightIsPressed = false;
         bool mouseMiddleIsPressed = false;
+        bool mouseLeftIsPressed = false;
         bool rIsPressed = false;
+
         bool Reset = false;
         bool Won = false;
-        int pauseCooldown = 20;
+        int pauseCooldown = 800;
+        Score = 0;
+
+        //Title screen
+        while (gameInTitle && !glfwWindowShouldClose(window))
+        {
+            processInput(window, mouseLeftIsPressed, mouseRightIsPressed, mouseMiddleIsPressed, rIsPressed);
+
+            title.draw({0.0f, 0.0f});
+            glfwSwapBuffers(window);
+
+            if (pauseCooldown == 0 && mouseLeftIsPressed)
+            {
+                gameInTitle = false;
+                pauseCooldown = 40;
+            }
+            if (pauseCooldown > 0)
+                pauseCooldown--;
+            glfwPollEvents();
+        }
 
         // Loop da aplicação
-        while (!Reset && player.ship.active && !glfwWindowShouldClose(window))
+        while ((!Reset && player.ship.active) && !glfwWindowShouldClose(window))
         {
             Reset = false;
             // Input handling
-            processInput(window, mouseRightIsPressed, mouseMiddleIsPressed, rIsPressed);
+            processInput(window, mouseLeftIsPressed, mouseRightIsPressed, mouseMiddleIsPressed, rIsPressed);
 
             crntTime = glfwGetTime();
             timeDiff = crntTime - prevTime;
@@ -145,14 +177,13 @@ int main()
                 if (mouseRightIsPressed && pauseCooldown == 0)
                 {
                     gameIsPaused = !gameIsPaused;
-                    pauseCooldown = 20;
+                    pauseCooldown = 40;
                 }
 
                 if (rIsPressed && pauseCooldown == 0)
                 {
                     Reset = true;
-                    print("RESET");
-                    pauseCooldown = 20;
+                    pauseCooldown = 40;
                 }
 
                 if (pauseCooldown > 0)
@@ -176,10 +207,17 @@ int main()
             wave3.update(player);
             wave4.update(player);
 
-            player.gun.interact(wave1);
-            player.gun.interact(wave2);
-            player.gun.interact(wave3);
-            player.gun.interact(wave4);
+            player.gun[0].interact(wave1);
+            player.gun[1].interact(wave1);
+
+            player.gun[0].interact(wave2);
+            player.gun[1].interact(wave2);
+
+            player.gun[0].interact(wave3);
+            player.gun[1].interact(wave3);
+
+            player.gun[0].interact(wave4);
+            player.gun[1].interact(wave4);
 
             if (!wave1.Alive && !wave2.Alive && !wave3.Alive && !wave4.Alive)
             {
@@ -195,12 +233,15 @@ int main()
             wave4.draw();
 
             player.draw();
+            DisplayScore(numbers);
 
             // Main do jogo Pausado
             if (gameIsPaused)
             {
                 player.ship.hitbox.draw();
-                player.gun.drawBulletsHitBoxes();
+
+                player.gun[0].drawBulletsHitBoxes();
+                player.gun[1].drawBulletsHitBoxes();
 
                 wave1.drawHitbox();
                 wave2.drawHitbox();
@@ -215,7 +256,7 @@ int main()
             while (gameIsPaused && !glfwWindowShouldClose(window))
             {
                 mouseMiddleIsPressed = false;
-                processInput(window, mouseRightIsPressed, mouseMiddleIsPressed, rIsPressed);
+                processInput(window, mouseLeftIsPressed, mouseRightIsPressed, mouseMiddleIsPressed, rIsPressed);
 
                 crntTime = glfwGetTime();
                 timeDiff = crntTime - prevTime;
@@ -232,7 +273,7 @@ int main()
                     if (mouseRightIsPressed && pauseCooldown == 0)
                     {
                         gameIsPaused = !gameIsPaused;
-                        pauseCooldown = 20;
+                        pauseCooldown = 40;
                     }
                     if (mouseMiddleIsPressed && pauseCooldown == 0)
                     {
@@ -244,7 +285,7 @@ int main()
                         wave4.debug();
 
                         gameIsPaused = false;
-                        pauseCooldown = 20;
+                        pauseCooldown = 40;
                     }
                     if (pauseCooldown > 0)
                         pauseCooldown--;
@@ -265,14 +306,28 @@ int main()
 
         if (Won)
         {
+
+            Sprite win(2.0f * WIDTH / HEIGHT, 2.0f, textureWin, 1);
+            win.draw({0.0f, 0.0f});
+            glfwSwapBuffers(window);
+
             print("Voce Ganhou !!! ");
-            std::cout << "Score " << player.gun.Score << std::endl;
+            std::cout << "Score " << Score << std::endl;
+            sleep_until(system_clock::now() + seconds(5));
         }
-        else
+        else if (!Won && !glfwWindowShouldClose(window))
         {
+
+            Sprite lose(2.0f * WIDTH / HEIGHT, 2.0f, textureLose, 1);
+            lose.draw({0.0f, 0.0f});
+            glfwSwapBuffers(window);
+
             print("Voce Perdeu :( ");
-            std::cout << "Score " << player.gun.Score << std::endl;
+            std::cout << "Score " << Score << std::endl;
+            sleep_until(system_clock::now() + seconds(5));
         }
+
+        SaveScore(Score);
     }
     // Desalocar memória dos objetos instanciados
     glfwTerminate(); // Faz a limpeza dos recursos utilizados pelo GLFW
@@ -280,7 +335,7 @@ int main()
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-void processInput(GLFWwindow *window, bool &mouseRightIsPressed, bool &mouseMiddleIsPressed, bool &rIsPressed)
+void processInput(GLFWwindow *window, bool &mouseLeftIsPressed, bool &mouseRightIsPressed, bool &mouseMiddleIsPressed, bool &rIsPressed)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
@@ -294,6 +349,10 @@ void processInput(GLFWwindow *window, bool &mouseRightIsPressed, bool &mouseMidd
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
     {
         mouseMiddleIsPressed = true;
+    }
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+    {
+        mouseLeftIsPressed = true;
     }
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
     {

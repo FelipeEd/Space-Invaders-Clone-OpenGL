@@ -5,8 +5,8 @@ Sprite::Sprite() {}
 Sprite::Sprite(float w, float h, unsigned int intexture, int nframes)
 {
 
-    Shader shaderProgram("bin/shaders/vertex.glsl", "bin/shaders/fragment.glsl");
-
+    //Shader shaderProgram("bin/shaders/vertex.glsl", "bin/shaders/fragment.glsl");
+    this->shader = shaderProgram;
     this->scale.x = w;
     this->scale.y = h;
 

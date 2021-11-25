@@ -6,7 +6,7 @@ Guns::Guns(int type)
     // Alien ammo 1
     if (type == 0)
     {
-        this->maxAmmo = 9999999;
+        this->maxAmmo = 99999;
         this->currentAmmo = maxAmmo;
         this->fireCooldown = 0;
         this->damage = 50.0f;
@@ -21,7 +21,7 @@ Guns::Guns(int type)
     // Alien ammo 2
     if (type == 2)
     {
-        this->maxAmmo = 9999999;
+        this->maxAmmo = 99999;
         this->currentAmmo = maxAmmo;
         this->fireCooldown = 0;
         this->damage = 20.0f;
@@ -36,7 +36,7 @@ Guns::Guns(int type)
     // Alien ammo 3
     if (type == 4)
     {
-        this->maxAmmo = 9999999;
+        this->maxAmmo = 99999;
         this->currentAmmo = maxAmmo;
         this->fireCooldown = 0;
         this->damage = 10.0f;
@@ -51,7 +51,7 @@ Guns::Guns(int type)
     // Alien ammo 4
     if (type == 6)
     {
-        this->maxAmmo = 9999999;
+        this->maxAmmo = 99999;
         this->currentAmmo = maxAmmo;
         this->fireCooldown = 0;
         this->damage = 5.0f;
@@ -67,15 +67,30 @@ Guns::Guns(int type)
     // Player ammo 1
     if (type == 1)
     {
-        this->maxAmmo = 9999999;
+        this->maxAmmo = 99999;
         this->currentAmmo = maxAmmo;
         this->fireCooldown = 20;
         this->damage = 20;
         for (auto &bullet : bullets)
         {
             bullet = Entity(-100, -100, 0.1f, 0.1f, textureBullet1, 1);
+            bullet.sprite.setColor(blue);
             bullet.active = false;
             bullet.setSpeed(0.0f, 0.03f);
+        }
+    }
+    if (type == 3)
+    {
+        this->maxAmmo = 10;
+        this->currentAmmo = maxAmmo;
+        this->fireCooldown = 30;
+        this->damage = 40;
+        for (auto &bullet : bullets)
+        {
+            bullet = Entity(-100, -100, 0.2f, 0.2f, textureBullet1, 1);
+            bullet.sprite.setColor(magenta);
+            bullet.active = false;
+            bullet.setSpeed(0.0f, 0.01f);
         }
     }
 }
@@ -107,7 +122,9 @@ void Guns::countCoolDown()
 {
     this->currentfireCooldown--;
     if (this->currentfireCooldown < 0)
+    {
         this->currentfireCooldown = 0;
+    }
 }
 
 void Guns::moveBullets()
@@ -117,7 +134,9 @@ void Guns::moveBullets()
         bullet.move();
         // Se sair da tela desativar
         if (!(abs(bullet.getPosition().x) <= 1.0f && abs(bullet.getPosition().y) <= 1.0f))
+        {
             bullet.active = false;
+        }
     }
 }
 
@@ -139,7 +158,7 @@ void Guns::interact(AlienSquad &aliens)
                         this->onHit(bullet);
                         if (aliens.Aliens[i].ship.active == false)
                         {
-                            this->Score += 100 / aliens.Aliens[i].type;
+                            Score += 100 / aliens.Aliens[i].type;
                         }
                     }
                 }

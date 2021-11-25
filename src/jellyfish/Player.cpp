@@ -2,6 +2,9 @@
 
 Player::Player()
 {
+    this->gun[0] = Guns(1);
+    this->gun[1] = Guns(3);
+    this->ship = Entity(0, -0.8f, texturePlayer, 3);
 }
 
 void Player::update()
@@ -37,37 +40,57 @@ void Player::update()
 
     // Animation control
     if (this->ship.getSpeed().x > 0.02)
+    {
         this->ship.sprite.setCurrentFrame(1);
+    }
     else if (this->ship.getSpeed().x < -0.02)
+    {
         this->ship.sprite.setCurrentFrame(2);
+    }
     else
+    {
         this->ship.sprite.setCurrentFrame(0);
+    }
+
+    if (changeGun && this->changeGunCooldown == 0)
+    {
+        this->currentGun += 1;
+        this->currentGun = this->currentGun % 2;
+        this->changeGunCooldown = 20;
+    }
 
     if (Fire)
     {
-        if (this->gun.currentfireCooldown == 0)
+        if (this->gun[currentGun].currentfireCooldown == 0)
         {
             sndPlaySound(laser1, SND_MEMORY | SND_ASYNC);
         }
 
         Point firepos = this->getPosition();
         firepos.y += 0.001f;
-        this->gun.fire(firepos);
+        this->gun[currentGun].fire(firepos);
     }
 
-    this->gun.moveBullets();
+    this->gun[0].moveBullets();
+    this->gun[1].moveBullets();
+
     this->ship.moveInBounds();
     // Reseta os inputs
     Fire = false;
     MoveLeft = false;
     MoveRight = false;
+    changeGun = false;
 }
 
 void Player::draw()
 {
-    this->gun.drawBullets();
+    this->gun[0].drawBullets();
+    this->gun[1].drawBullets();
+
     if (this->vida >= 50.0f)
+    {
         this->ship.draw();
+    }
     else
     {
         this->ship.sprite.setColor(red);
@@ -85,11 +108,17 @@ void Player::takeDamage(float hit)
 void Player::keyUpdate(GLFWwindow *window)
 {
     // Coisas dependentes de tempo
-    this->gun.countCoolDown();
+    this->gun[0].countCoolDown();
+    this->gun[1].countCoolDown();
+
+    if (this->changeGunCooldown > 0)
+    {
+        this->changeGunCooldown--;
+    }
 
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        //this->MoveLeft = true;
+        this->changeGun = true;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
@@ -128,5 +157,6 @@ void Player::debug()
     std::cout << "Player ::" << std::endl;
     //std::cout << "Player ::"<< this-> << std::endl;
     this->ship.debug();
-    this->gun.debug();
+    this->gun[0].debug();
+    this->gun[1].debug();
 }

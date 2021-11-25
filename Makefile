@@ -27,7 +27,7 @@ INCLUDE_PATHS = -Iinclude
 LIBRARY_PATHS = -Llibs
 
 #Aditional compile options
-COMPILER_FLAGS =
+COMPILER_FLAGS = -g
 
 #Specifies which libraries we're linking
 LINKER_FLAGS = -lglfw3 -lOpenGL32 -lwinmm

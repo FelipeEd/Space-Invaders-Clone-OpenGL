@@ -110,3 +110,8 @@ void Shader::setVec4(const std::string &uniformName, float value[4]) const
 {
 	glUniform4f(glGetUniformLocation(this->id, uniformName.c_str()), value[0], value[1], value[2], value[3]);
 }
+
+void Shader::Delete() const
+{
+	glDeleteProgram(this->id);
+}

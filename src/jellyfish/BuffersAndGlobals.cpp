@@ -33,8 +33,10 @@ unsigned int createTexture(const char *textureName)
 }
 
 // Cria o VAO e VBO Unicos
-void createBuffers(unsigned int &vao, unsigned int &vbo)
+void createBuffers(unsigned int &vao, unsigned int &vbo, Shader &shaderProgram)
 {
+
+    shaderProgram = Shader("bin/shaders/vertex.glsl", "bin/shaders/fragment.glsl");
 
     // Centrado na origem
     float vertexData[] = {
@@ -107,4 +109,33 @@ float pixelYToNDC(int y)
 void print(const char *msg)
 {
     std::cout << msg << std::endl;
-};
+}
+
+void DisplayScore(Sprite numbers)
+{
+    Sprite unidade = numbers;
+    Sprite dezena = numbers;
+    Sprite centena = numbers;
+    Sprite milhar = numbers;
+
+    unidade.setCurrentFrame(Score % 10);
+    dezena.setCurrentFrame((Score % 100) / 10);
+    centena.setCurrentFrame((Score % 1000) / 100);
+    milhar.setCurrentFrame((Score % 10000) / 1000);
+
+    Point start = {-0.8f, -0.8f};
+    float clamp = 0.05;
+
+    milhar.draw(start);
+    start.x += clamp;
+    centena.draw(start);
+    start.x += clamp;
+    dezena.draw(start);
+    start.x += clamp;
+    unidade.draw(start);
+}
+
+void SaveScore(unsigned int Score)
+{
+    int i = 0;
+}

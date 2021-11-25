@@ -12,7 +12,7 @@ Alien::Alien(float posx, float posy, unsigned int texture, int nframes, int type
         this->vidaMax = 80.0f;
         this->vida = this->vidaMax;
         this->gun = Guns(0);
-        this->TravelingChance = 10;
+        this->TravelingChance = 20;
     }
     // O verde
     if (this->type == 2)
@@ -20,7 +20,7 @@ Alien::Alien(float posx, float posy, unsigned int texture, int nframes, int type
         this->vidaMax = 60.0f;
         this->vida = this->vidaMax;
         this->gun = Guns(2);
-        this->TravelingChance = 5;
+        this->TravelingChance = 10;
     }
     // O roxo
     if (this->type == 3)
