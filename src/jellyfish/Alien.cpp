@@ -77,7 +77,11 @@ void Alien::move(Entity empty)
         this->warpArround(empty);
     }
     else
+    {
         this->ship.move();
+        this->ship.setPosition(this->ship.getPosition().x, this->initPos.y + sin(this->ship.getPosition().x * 10) / 20);
+    }
+
     this->gun.moveBullets();
 }
 

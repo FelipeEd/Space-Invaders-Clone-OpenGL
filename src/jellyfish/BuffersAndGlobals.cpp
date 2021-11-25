@@ -111,20 +111,19 @@ void print(const char *msg)
     std::cout << msg << std::endl;
 }
 
-void DisplayScore(Sprite numbers)
+void DisplayScore(Sprite numbers, int displayNum, Point start)
 {
     Sprite unidade = numbers;
     Sprite dezena = numbers;
     Sprite centena = numbers;
     Sprite milhar = numbers;
 
-    unidade.setCurrentFrame(Score % 10);
-    dezena.setCurrentFrame((Score % 100) / 10);
-    centena.setCurrentFrame((Score % 1000) / 100);
-    milhar.setCurrentFrame((Score % 10000) / 1000);
+    unidade.setCurrentFrame(displayNum % 10);
+    dezena.setCurrentFrame((displayNum % 100) / 10);
+    centena.setCurrentFrame((displayNum % 1000) / 100);
+    milhar.setCurrentFrame((displayNum % 10000) / 1000);
 
-    Point start = {-0.8f, -0.8f};
-    float clamp = 0.05;
+    float clamp = 0.02;
 
     milhar.draw(start);
     start.x += clamp;
@@ -135,7 +134,25 @@ void DisplayScore(Sprite numbers)
     unidade.draw(start);
 }
 
-void SaveScore(unsigned int Score)
+void SaveScore()
 {
-    int i = 0;
+    FILE *f = fopen("records.txt", "w");
+    if (Score > Record)
+    {
+        fprintf(f, "%d", Score);
+    }
+    else
+    {
+        fprintf(f, "%d", Record);
+    }
+    fclose(f);
+}
+
+int ReadRecord()
+{
+    int record = 0;
+    FILE *f = fopen("records.txt", "r");
+    fscanf(f, "%d", &record);
+    fclose(f);
+    return record;
 }

@@ -28,6 +28,7 @@ extern float white[4];
 extern float red[4];
 extern float blue[4];
 extern float magenta[4];
+extern float green[4];
 
 extern unsigned int texturePlayer;
 extern unsigned int textureBullet1;
@@ -37,7 +38,8 @@ extern unsigned int textureBullet4;
 
 extern unsigned int textureHitBox;
 
-extern unsigned int Score;
+extern int Score;
+extern int Record;
 
 extern char laser1[30000];
 
@@ -72,8 +74,9 @@ float pixelXToNDC(int x);
 float NDCXToPixel(float x);
 float pixelYToNDC(int y);
 void print(const char *msg);
-void DisplayScore(Sprite numbers);
-void SaveScore(unsigned int Score);
+void DisplayScore(Sprite numbers, int displayNum, Point start);
+void SaveScore();
+int ReadRecord();
 
 // Classe basica para compilar os shaders do openGL
 class Shader
@@ -258,7 +261,7 @@ private:
 
 public:
     Entity ship;
-    Guns gun[2];
+    Guns gun[3];
     int currentGun = 0;
 
     Player();

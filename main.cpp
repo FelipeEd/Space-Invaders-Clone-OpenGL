@@ -5,8 +5,8 @@ void processInput(GLFWwindow *window, bool &mouseLeftIsPressed, bool &mouseRight
 
 // Global
 // Tamanho da janela
-unsigned int WIDTH = 1600; //1280;
-unsigned int HEIGHT = 900; //720;
+unsigned int WIDTH = 1920;  //1280;
+unsigned int HEIGHT = 1080; //720;
 
 unsigned int vao;
 unsigned int vbo;
@@ -18,6 +18,7 @@ float white[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 float blue[4] = {0.0f, 1.0f, 1.0f, 1.0f};
 float red[4] = {1.0f, 0.0f, 0.0f, 1.0f};
 float magenta[4] = {1.0f, 1.0f, 0.0f, 1.0f};
+float green[4] = {0.0f, 1.0f, 0.0f, 1.0f};
 
 // Texturas
 unsigned int texturePlayer;
@@ -28,7 +29,8 @@ unsigned int textureBullet4;
 
 unsigned int textureHitBox;
 
-unsigned int Score = 0;
+int Score = 0;
+int Record = 0;
 
 char laser1[30000];
 
@@ -87,7 +89,7 @@ int main()
     unsigned int textureTitle = createTexture("bin/assets/title.png");
     unsigned int textureNumbers = createTexture("bin/assets/numbers.png");
 
-    // // Audio
+    // Audio
     FILE *f1;
     f1 = fopen("bin\\assets\\laser1.wav", "r");
     fread(&laser1, sizeof(char), 30000, f1);
@@ -104,15 +106,23 @@ int main()
 
         Player player = Player();
 
-        Alien alien1(-1.0f, 0.8f, textureAlien1, 1, 1);
-        Alien alien2(-1.0f, 0.65f, textureAlien2, 1, 2);
-        Alien alien3(-1.0f, 0.50f, textureAlien3, 1, 3);
-        Alien alien4(-1.0f, 0.05f, textureAlien4, 1, 4);
+        //fase 1
+        Alien alien3_1(-1.0f, 0.80f, textureAlien3, 1, 3);
+        Alien alien4_1(-1.0f, 0.35f, textureAlien4, 1, 4);
 
-        AlienSquad wave1(alien1, 0.0f, 0.0f, 1, 5, 150);
-        AlienSquad wave2(alien2, 0.0f, 0.0f, 1, 5, 60);
-        AlienSquad wave3(alien3, 0.0f, 0.0f, 3, 5, 30);
-        AlienSquad wave4(alien4, 0.0f, 0.0f, 1, 5, 20);
+        AlienSquad wave5(alien3_1, 0.0f, 0.0f, 3, 8, 30);
+        AlienSquad wave6(alien4_1, 0.0f, 0.0f, 1, 8, 20);
+
+        // fase 2
+        Alien alien1_2(-0.7f, 0.8f, textureAlien1, 1, 1);
+        Alien alien2_2(-1.0f, 0.65f, textureAlien2, 1, 2);
+        Alien alien3_2(-1.0f, 0.50f, textureAlien3, 1, 3);
+        Alien alien4_2(-1.0f, 0.05f, textureAlien4, 1, 4);
+
+        AlienSquad wave1(alien1_2, 0.0f, 0.0f, 1, 4, 150);
+        AlienSquad wave2(alien2_2, 0.0f, 0.0f, 1, 8, 60);
+        AlienSquad wave3(alien3_2, 0.0f, 0.0f, 3, 8, 30);
+        AlienSquad wave4(alien4_2, 0.0f, 0.0f, 1, 8, 20);
 
         Entity background(0, 0, 2.0f * WIDTH / HEIGHT, 2.0f, textureBackground, 1);
         //Entity test(0.5f, 0, texturePlayer, 3);
@@ -131,8 +141,11 @@ int main()
 
         bool Reset = false;
         bool Won = false;
-        int pauseCooldown = 800;
+        int pauseCooldown = 60;
         Score = 0;
+        Record = ReadRecord();
+        Point start = {-0.95f, 0.95f};
+        int fase = 1;
 
         //Title screen
         while (gameInTitle && !glfwWindowShouldClose(window))
@@ -140,12 +153,14 @@ int main()
             processInput(window, mouseLeftIsPressed, mouseRightIsPressed, mouseMiddleIsPressed, rIsPressed);
 
             title.draw({0.0f, 0.0f});
+            numbers.setColor(red);
+            DisplayScore(numbers, Record, start);
             glfwSwapBuffers(window);
 
             if (pauseCooldown == 0 && mouseLeftIsPressed)
             {
                 gameInTitle = false;
-                pauseCooldown = 40;
+                pauseCooldown = 20;
             }
             if (pauseCooldown > 0)
                 pauseCooldown--;
@@ -177,13 +192,13 @@ int main()
                 if (mouseRightIsPressed && pauseCooldown == 0)
                 {
                     gameIsPaused = !gameIsPaused;
-                    pauseCooldown = 40;
+                    pauseCooldown = 20;
                 }
 
                 if (rIsPressed && pauseCooldown == 0)
                 {
                     Reset = true;
-                    pauseCooldown = 40;
+                    pauseCooldown = 20;
                 }
 
                 if (pauseCooldown > 0)
@@ -202,38 +217,72 @@ int main()
             glClear(GL_COLOR_BUFFER_BIT);
 
             background.draw();
-            wave1.update(player);
-            wave2.update(player);
-            wave3.update(player);
-            wave4.update(player);
 
-            player.gun[0].interact(wave1);
-            player.gun[1].interact(wave1);
-
-            player.gun[0].interact(wave2);
-            player.gun[1].interact(wave2);
-
-            player.gun[0].interact(wave3);
-            player.gun[1].interact(wave3);
-
-            player.gun[0].interact(wave4);
-            player.gun[1].interact(wave4);
-
-            if (!wave1.Alive && !wave2.Alive && !wave3.Alive && !wave4.Alive)
+            if (fase == 2)
             {
-                Won = true;
-                break;
+                wave1.update(player);
+                wave2.update(player);
+                wave3.update(player);
+                wave4.update(player);
+
+                player.gun[0].interact(wave1);
+                player.gun[1].interact(wave1);
+                player.gun[2].interact(wave1);
+
+                player.gun[0].interact(wave2);
+                player.gun[1].interact(wave2);
+                player.gun[2].interact(wave2);
+
+                player.gun[0].interact(wave3);
+                player.gun[1].interact(wave3);
+                player.gun[2].interact(wave3);
+
+                player.gun[0].interact(wave4);
+                player.gun[1].interact(wave4);
+                player.gun[2].interact(wave4);
+
+                player.update();
+
+                if (!wave1.Alive && !wave2.Alive && !wave3.Alive && !wave4.Alive)
+                {
+                    Won = true;
+                    break;
+                }
+
+                wave1.draw();
+                wave2.draw();
+                wave3.draw();
+                wave4.draw();
             }
 
-            player.update();
+            if (fase == 1)
+            {
+                wave5.update(player);
+                wave6.update(player);
 
-            wave1.draw();
-            wave2.draw();
-            wave3.draw();
-            wave4.draw();
+                player.gun[0].interact(wave5);
+                player.gun[1].interact(wave5);
+                player.gun[2].interact(wave5);
+
+                player.gun[0].interact(wave6);
+                player.gun[1].interact(wave6);
+                player.gun[2].interact(wave6);
+
+                player.update();
+
+                if (!wave5.Alive && !wave6.Alive)
+                {
+                    fase = 2;
+                }
+                wave5.draw();
+                wave6.draw();
+            }
 
             player.draw();
-            DisplayScore(numbers);
+            numbers.setColor(white);
+            DisplayScore(numbers, Score, start);
+            numbers.setColor(magenta);
+            DisplayScore(numbers, player.currentGun, {0.85, 0.95});
 
             // Main do jogo Pausado
             if (gameIsPaused)
@@ -242,11 +291,20 @@ int main()
 
                 player.gun[0].drawBulletsHitBoxes();
                 player.gun[1].drawBulletsHitBoxes();
+                player.gun[2].drawBulletsHitBoxes();
 
-                wave1.drawHitbox();
-                wave2.drawHitbox();
-                wave3.drawHitbox();
-                wave4.drawHitbox();
+                if (fase == 2)
+                {
+                    wave1.drawHitbox();
+                    wave2.drawHitbox();
+                    wave3.drawHitbox();
+                    wave4.drawHitbox();
+                }
+                if (fase == 1)
+                {
+                    wave5.drawHitbox();
+                    wave6.drawHitbox();
+                }
             }
             // Faz a troca do framebuffer antigo para o novo (double buffer)
             glfwSwapBuffers(window);
@@ -273,19 +331,26 @@ int main()
                     if (mouseRightIsPressed && pauseCooldown == 0)
                     {
                         gameIsPaused = !gameIsPaused;
-                        pauseCooldown = 40;
+                        pauseCooldown = 20;
                     }
                     if (mouseMiddleIsPressed && pauseCooldown == 0)
                     {
                         player.debug();
 
-                        wave1.debug();
-                        wave2.debug();
-                        wave3.debug();
-                        wave4.debug();
-
+                        if (fase == 2)
+                        {
+                            wave1.debug();
+                            wave2.debug();
+                            wave3.debug();
+                            wave4.debug();
+                        }
+                        if (fase == 1)
+                        {
+                            wave5.debug();
+                            wave6.debug();
+                        }
                         gameIsPaused = false;
-                        pauseCooldown = 40;
+                        pauseCooldown = 20;
                     }
                     if (pauseCooldown > 0)
                         pauseCooldown--;
@@ -313,7 +378,7 @@ int main()
 
             print("Voce Ganhou !!! ");
             std::cout << "Score " << Score << std::endl;
-            sleep_until(system_clock::now() + seconds(5));
+            sleep_until(system_clock::now() + seconds(4));
         }
         else if (!Won && !glfwWindowShouldClose(window))
         {
@@ -324,10 +389,10 @@ int main()
 
             print("Voce Perdeu :( ");
             std::cout << "Score " << Score << std::endl;
-            sleep_until(system_clock::now() + seconds(5));
+            sleep_until(system_clock::now() + seconds(4));
         }
 
-        SaveScore(Score);
+        SaveScore();
     }
     // Desalocar memória dos objetos instanciados
     glfwTerminate(); // Faz a limpeza dos recursos utilizados pelo GLFW

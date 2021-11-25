@@ -81,7 +81,7 @@ Guns::Guns(int type)
     }
     if (type == 3)
     {
-        this->maxAmmo = 10;
+        this->maxAmmo = 20;
         this->currentAmmo = maxAmmo;
         this->fireCooldown = 30;
         this->damage = 40;
@@ -91,6 +91,20 @@ Guns::Guns(int type)
             bullet.sprite.setColor(magenta);
             bullet.active = false;
             bullet.setSpeed(0.0f, 0.01f);
+        }
+    }
+    if (type == 5)
+    {
+        this->maxAmmo = 3;
+        this->currentAmmo = maxAmmo;
+        this->fireCooldown = 30;
+        this->damage = 100;
+        for (auto &bullet : bullets)
+        {
+            bullet = Entity(-100, -100, 0.3f, 0.3f, textureBullet1, 1);
+            bullet.sprite.setColor(red);
+            bullet.active = false;
+            bullet.setSpeed(0.0f, 0.06f);
         }
     }
 }

@@ -4,6 +4,7 @@ Player::Player()
 {
     this->gun[0] = Guns(1);
     this->gun[1] = Guns(3);
+    this->gun[2] = Guns(5);
     this->ship = Entity(0, -0.8f, texturePlayer, 3);
 }
 
@@ -39,11 +40,11 @@ void Player::update()
     }
 
     // Animation control
-    if (this->ship.getSpeed().x > 0.02)
+    if (this->ship.getSpeed().x > 0.01)
     {
         this->ship.sprite.setCurrentFrame(1);
     }
-    else if (this->ship.getSpeed().x < -0.02)
+    else if (this->ship.getSpeed().x < -0.01)
     {
         this->ship.sprite.setCurrentFrame(2);
     }
@@ -55,7 +56,7 @@ void Player::update()
     if (changeGun && this->changeGunCooldown == 0)
     {
         this->currentGun += 1;
-        this->currentGun = this->currentGun % 2;
+        this->currentGun = this->currentGun % 3;
         this->changeGunCooldown = 20;
     }
 
@@ -73,6 +74,7 @@ void Player::update()
 
     this->gun[0].moveBullets();
     this->gun[1].moveBullets();
+    this->gun[2].moveBullets();
 
     this->ship.moveInBounds();
     // Reseta os inputs
@@ -86,6 +88,7 @@ void Player::draw()
 {
     this->gun[0].drawBullets();
     this->gun[1].drawBullets();
+    this->gun[2].drawBullets();
 
     if (this->vida >= 50.0f)
     {
@@ -110,6 +113,7 @@ void Player::keyUpdate(GLFWwindow *window)
     // Coisas dependentes de tempo
     this->gun[0].countCoolDown();
     this->gun[1].countCoolDown();
+    this->gun[2].countCoolDown();
 
     if (this->changeGunCooldown > 0)
     {
@@ -159,4 +163,5 @@ void Player::debug()
     this->ship.debug();
     this->gun[0].debug();
     this->gun[1].debug();
+    this->gun[2].debug();
 }
