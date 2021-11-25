@@ -26,6 +26,7 @@ unsigned int textureBullet1;
 unsigned int textureBullet2;
 unsigned int textureBullet3;
 unsigned int textureBullet4;
+unsigned int textureBullet5;
 
 unsigned int textureHitBox;
 
@@ -75,6 +76,7 @@ int main()
     textureBullet2 = createTexture("bin/assets/Bullet2.png");
     textureBullet3 = createTexture("bin/assets/Bullet3.png");
     textureBullet4 = createTexture("bin/assets/Bullet4.png");
+    textureBullet5 = createTexture("bin/assets/Bullet5.png");
 
     textureHitBox = createTexture("bin/assets/Hitbox.png");
 
@@ -82,6 +84,7 @@ int main()
     unsigned int textureAlien2 = createTexture("bin/assets/Alien2.png");
     unsigned int textureAlien3 = createTexture("bin/assets/Alien3.png");
     unsigned int textureAlien4 = createTexture("bin/assets/Alien4.png");
+    unsigned int textureBoss = createTexture("bin/assets/Boss.png");
 
     unsigned int textureBackground = createTexture("bin/assets/Background.png");
     unsigned int textureLose = createTexture("bin/assets/lose.png");
@@ -123,6 +126,10 @@ int main()
         AlienSquad wave2(alien2_2, 0.0f, 0.0f, 1, 8, 60);
         AlienSquad wave3(alien3_2, 0.0f, 0.0f, 3, 8, 30);
         AlienSquad wave4(alien4_2, 0.0f, 0.0f, 1, 8, 20);
+
+        // fase 3
+        Alien alienBoss(-1.0f, 0.60f, textureBoss, 1, 5);
+        AlienSquad boss(alienBoss, 0.0f, 0.0f, 1, 1, 20);
 
         Entity background(0, 0, 2.0f * WIDTH / HEIGHT, 2.0f, textureBackground, 1);
         //Entity test(0.5f, 0, texturePlayer, 3);
@@ -217,7 +224,24 @@ int main()
             glClear(GL_COLOR_BUFFER_BIT);
 
             background.draw();
+            if (fase == 3)
+            {
+                boss.update(player);
 
+                player.gun[0].interact(boss);
+                player.gun[1].interact(boss);
+                player.gun[2].interact(boss);
+
+                player.update();
+
+                if (!boss.Alive)
+                {
+                    Won = true;
+                    break;
+                }
+
+                boss.draw();
+            }
             if (fase == 2)
             {
                 wave1.update(player);
@@ -245,8 +269,7 @@ int main()
 
                 if (!wave1.Alive && !wave2.Alive && !wave3.Alive && !wave4.Alive)
                 {
-                    Won = true;
-                    break;
+                    fase = 3;
                 }
 
                 wave1.draw();
@@ -274,6 +297,7 @@ int main()
                 {
                     fase = 2;
                 }
+
                 wave5.draw();
                 wave6.draw();
             }

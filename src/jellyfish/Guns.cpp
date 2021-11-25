@@ -63,6 +63,20 @@ Guns::Guns(int type)
             bullet.setSpeed(0.0f, -0.04f);
         }
     }
+    // Boss ammo
+    if (type == 8)
+    {
+        this->maxAmmo = 99999;
+        this->currentAmmo = maxAmmo;
+        this->fireCooldown = 0;
+        this->damage = 60.0f;
+        for (auto &bullet : bullets)
+        {
+            bullet = Entity(-100, -100, 0.4f, 0.4f, textureBullet5, 1);
+            bullet.active = false;
+            bullet.setSpeed(((rand() % 20) - 10) / 1000.0f, -0.03f);
+        }
+    }
 
     // Player ammo 1
     if (type == 1)
@@ -70,18 +84,18 @@ Guns::Guns(int type)
         this->maxAmmo = 99999;
         this->currentAmmo = maxAmmo;
         this->fireCooldown = 20;
-        this->damage = 20;
+        this->damage = 30; // 20
         for (auto &bullet : bullets)
         {
             bullet = Entity(-100, -100, 0.1f, 0.1f, textureBullet1, 1);
             bullet.sprite.setColor(blue);
             bullet.active = false;
-            bullet.setSpeed(0.0f, 0.03f);
+            bullet.setSpeed(0.0f, 0.04f);
         }
     }
     if (type == 3)
     {
-        this->maxAmmo = 20;
+        this->maxAmmo = 30;
         this->currentAmmo = maxAmmo;
         this->fireCooldown = 30;
         this->damage = 40;
@@ -90,12 +104,12 @@ Guns::Guns(int type)
             bullet = Entity(-100, -100, 0.2f, 0.2f, textureBullet1, 1);
             bullet.sprite.setColor(magenta);
             bullet.active = false;
-            bullet.setSpeed(0.0f, 0.01f);
+            bullet.setSpeed(0.0f, 0.02f);
         }
     }
     if (type == 5)
     {
-        this->maxAmmo = 3;
+        this->maxAmmo = 10;
         this->currentAmmo = maxAmmo;
         this->fireCooldown = 30;
         this->damage = 100;

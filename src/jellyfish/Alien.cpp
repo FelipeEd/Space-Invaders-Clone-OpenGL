@@ -39,6 +39,15 @@ Alien::Alien(float posx, float posy, unsigned int texture, int nframes, int type
         this->TravelingChance = 1;
         //this->ship = Entity(posx, posy, 0.1f, 0.1f, texture, nframes);
     }
+    // Boss
+    if (this->type == 5)
+    {
+        this->vidaMax = 650.0f;
+        this->vida = this->vidaMax;
+        this->gun = Guns(8);
+        this->TravelingChance = 1;
+        this->ship = Entity(posx, posy, 0.7f, 0.7f, texture, nframes);
+    }
 }
 
 void Alien::fire()

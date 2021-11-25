@@ -35,6 +35,7 @@ extern unsigned int textureBullet1;
 extern unsigned int textureBullet2;
 extern unsigned int textureBullet3;
 extern unsigned int textureBullet4;
+extern unsigned int textureBullet5;
 
 extern unsigned int textureHitBox;
 
