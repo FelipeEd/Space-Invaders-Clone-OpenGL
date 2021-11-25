@@ -317,6 +317,10 @@ int main()
                 player.gun[1].drawBulletsHitBoxes();
                 player.gun[2].drawBulletsHitBoxes();
 
+                if (fase == 3)
+                {
+                    boss.drawHitbox();
+                }
                 if (fase == 2)
                 {
                     wave1.drawHitbox();
@@ -360,7 +364,10 @@ int main()
                     if (mouseMiddleIsPressed && pauseCooldown == 0)
                     {
                         player.debug();
-
+                        if (fase == 3)
+                        {
+                            boss.debug();
+                        }
                         if (fase == 2)
                         {
                             wave1.debug();
